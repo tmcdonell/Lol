@@ -75,7 +75,7 @@ fCRT = evalM $ fTensor ppCRT
 -- | The inverse Chinese Remainder Transform.
 -- Exists if and only if CRT exists for all prime powers.
 fCRTInv = do
-  (_, mhatInv) :: (CRTInfo r) <- proxyT crtInfo (Proxy :: Proxy m)
+  (_, mhatInv) :: (CRTInfo Int r) <- proxyT crtInfo (Proxy :: Proxy m)
   let totm = proxy totientFact (Proxy :: Proxy m)
       divMhat = trans totm $ RT.map (*mhatInv)
   evalM $ (divMhat .*) <$> fTensor ppCRTInv'

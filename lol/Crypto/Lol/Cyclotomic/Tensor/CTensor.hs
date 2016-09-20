@@ -376,7 +376,7 @@ basicDispatch f = unsafePerformIO . withBasicArgs f
 
 gSqNormDec' :: (Storable r, Fact m, Dispatch r)
                => Tagged m (CT' m r -> r)
-gSqNormDec' = return $ (!0) . unCT . unsafePerformIO . withBasicArgs dnorm
+gSqNormDec' = return $ (! 0) . unCT . unsafePerformIO . withBasicArgs dnorm
 
 ctCRT :: (Storable r, CRTrans mon r, Dispatch r, Fact m)
          => TaggedT m mon (CT' m r -> CT' m r)
@@ -386,10 +386,10 @@ ctCRT = do
     withPtrArray ru' (flip withBasicArgs x . dcrt)
 
 -- CTensor CRT^(-1) functions take inverse rus
-ctCRTInv :: (Storable r, CRTrans mon r, Dispatch r, Fact m)
+ctCRTInv :: forall mon m r . (Storable r, CRTrans mon r, Dispatch r, Fact m)
          => TaggedT m mon (CT' m r -> CT' m r)
 ctCRTInv = do
-  mhatInv <- snd <$> crtInfo
+  mhatInv <- snd <$> (crtInfo :: TaggedT m mon (Int -> r, r))
   ruinv' <- ruInv
   return $ \x -> unsafePerformIO $
     withPtrArray ruinv' (\ruptr -> with mhatInv (flip withBasicArgs x . dcrtinv ruptr))

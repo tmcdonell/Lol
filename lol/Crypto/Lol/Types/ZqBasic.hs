@@ -130,8 +130,8 @@ instance (Reflects p z, Reflects q z, ToInteger z, Field (ZqBasic q z), Field (Z
 -- Therefore, outputs for different values of \(m\) are consistent,
 -- i.e., \(\omega_{m'}^(m'/m) = \omega_m\).
 principalRootUnity ::
-    forall m q z . (Reflects m Int, Reflects q z, ToInteger z, Enumerable (ZqBasic q z))
-               => TaggedT m Maybe (Int -> ZqBasic q z)
+    forall m q i z . (Reflects m Int, Reflects q z, ToInteger i, ToInteger z, Enumerable (ZqBasic q z))
+               => TaggedT m Maybe (i -> ZqBasic q z)
 principalRootUnity =        -- use Integers for all intermediate calcs
   let qval = fromIntegral (proxy value (Proxy::Proxy q) :: z)
       mval = proxy value (Proxy::Proxy m)
@@ -148,7 +148,7 @@ principalRootUnity =        -- use Integers for all intermediate calcs
                  in if mr == 0
                     then let omega = head (filter isGen values) ^ mq
                              omegaPows = V.iterateN mval (*omega) one
-                         in Just $ (omegaPows V.!) . (`mod` mval)
+                         in Just $ (omegaPows V.!) . (`mod` mval) . fromIntegral
                     else Nothing
             else Nothing       -- fail if q composite
 

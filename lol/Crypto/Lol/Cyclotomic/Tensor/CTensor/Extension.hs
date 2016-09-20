@@ -70,7 +70,7 @@ embedDec' = (\indices arr -> generate (U.length indices)
 embedCRT' :: forall mon m m' r . (CRTrans mon r, Storable r, m `Divides` m')
           => TaggedT '(m, m') mon (Vector r -> Vector r)
 embedCRT' =
-  (lift (proxyT crtInfo (Proxy::Proxy m') :: mon (CRTInfo r))) >>
+  (lift (proxyT crtInfo (Proxy::Proxy m') :: mon (CRTInfo Int r))) >>
   (pureT $ backpermute' <$> baseIndicesCRT)
 
 -- | maps a vector in the powerful/decoding basis, representing an
@@ -105,7 +105,7 @@ twaceCRT' = tagT $ do
   gInv <- proxyT (kronToVec gInvCRTK) (Proxy::Proxy m)
   embed <- proxyT embedCRT' (Proxy::Proxy '(m,m'))
   indices <- pure $ proxy extIndicesCRT (Proxy::Proxy '(m,m'))
-  (_, m'hatinv) <- proxyT crtInfo (Proxy::Proxy m')
+  (_ :: Int -> r, m'hatinv) <- proxyT crtInfo (Proxy::Proxy m')
   let phi = proxy totientFact (Proxy::Proxy m)
       phi' = proxy totientFact (Proxy::Proxy m')
       mhat = fromIntegral $ proxy valueHatFact (Proxy::Proxy m)

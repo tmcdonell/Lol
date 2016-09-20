@@ -30,7 +30,7 @@ import Control.Arrow
 --
 --     (2) the multiplicative inverse of \(\hat{m}\in R\).
 
-type CRTInfo r = (Int -> r, r)
+type CRTInfo i r = (i -> r, r)
 
 -- | A ring that (possibly) supports invertible Chinese remainder
 -- transformations of various indices.
@@ -45,7 +45,7 @@ class (Monad mon, Ring r) => CRTrans mon r where
   -- | 'CRTInfo' for a given index \(m\). The method itself may be
   -- slow, but the function it returns should be fast, e.g., via
   -- internal memoization.
-  crtInfo :: Reflects m Int => TaggedT m mon (CRTInfo r)
+  crtInfo :: (Reflects m Int, ToInteger i) => TaggedT m mon (CRTInfo i r)
 
 -- | A ring with a ring embedding into some ring @'CRTExt' r@ that has
 -- an invertible CRT transformation for /every/ positive index \(m\).
@@ -74,13 +74,13 @@ instance (CRTEmbed a, CRTEmbed b) => CRTEmbed (a,b) where
 instance (Monad mon, Transcendental a) => CRTrans mon (Complex a) where
   crtInfo = crtInfoC
 
-crtInfoC :: forall mon m a . (Monad mon, Reflects m Int, Transcendental a)
-            => TaggedT m mon (CRTInfo (Complex a))
+crtInfoC :: forall mon m i a . (Monad mon, Reflects m Int, Transcendental a, ToInteger i)
+            => TaggedT m mon (CRTInfo i (Complex a))
 crtInfoC = let mval = proxy value (Proxy::Proxy m)
                mhat = valueHat mval
            in return (omegaPowC mval, recip $ fromIntegral mhat)
 
-omegaPowC :: (Transcendental a) => Int -> Int -> Complex a
+omegaPowC :: (Transcendental a, ToInteger i) => Int -> i -> Complex a
 omegaPowC m i = cis (2*pi*fromIntegral i / fromIntegral m)
 
 -- | Self-embed
