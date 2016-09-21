@@ -61,13 +61,13 @@ twacePowDec'
 -- basis of the m'th cyclotomic ring to the mth cyclotomic ring when
 -- @m | m'@.
 twaceCRT' :: forall mon m m' r .
-             (m `Divides` m', CRTrans mon r, Unbox r, Elt r)
+             (m `Divides` m', CRTrans mon r, Unbox r, Elt r, CRTIndex r ~ Int)
              => mon (Arr m' r -> Arr m r)
 twaceCRT' = do
   g' :: Arr m' r <- gCRT
   gInv <- gInvCRT
   embed :: Arr m r -> Arr m' r <- embedCRT'
-  (_ :: Int -> r, m'hatinv) <- proxyT crtInfo (Proxy::Proxy m')
+  (_, m'hatinv) <- proxyT crtInfo (Proxy::Proxy m')
   let hatRatioInv = m'hatinv * fromIntegral (proxy valueHatFact (Proxy::Proxy m))
       -- tweak = mhat * g' / (m'hat * g)
       tweak = (coerce $ \x -> force . RT.map (* hatRatioInv) . RT.zipWith (*) x) (embed gInv) g' :: Arr m' r
@@ -103,7 +103,7 @@ embedCRT' :: forall mon m m' r . (m `Divides` m', CRTrans mon r, Unbox r)
              => mon (Arr m r -> Arr m' r)
 embedCRT' = do
   -- first check existence of CRT transform of index m'
-  _ <- proxyT crtInfo (Proxy::Proxy m') :: mon (CRTInfo Int r)
+  _ <- proxyT crtInfo (Proxy::Proxy m') :: mon (CRTInfo r)
   let idxs = proxy baseIndicesCRT (Proxy::Proxy '(m,m'))
   return $ coerce $ \ !arr -> (force $ backpermute (extent idxs) (idxs !) arr)
 

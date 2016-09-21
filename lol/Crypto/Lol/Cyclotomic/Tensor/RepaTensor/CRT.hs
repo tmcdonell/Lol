@@ -33,13 +33,13 @@ scalarCRT'
     in pure $ Arr . force . fromFunction sz . const
 
 -- | Multiply by @g_m@ in the CRT basis (when it exists).
-mulGCRT' :: (Fact m, CRTrans mon r, Unbox r)
+mulGCRT' :: (Fact m, CRTrans mon r, Unbox r, CRTIndex r ~ Int)
             => mon (Arr m r -> Arr  m r)
 {-# INLINABLE mulGCRT' #-}
 mulGCRT' = (coerce (\x -> force . RT.zipWith (*) x) `asTypeOf` asTypeOf) <$> gCRT
 
 -- | Divide by @g@ in the CRT basis (when it exists).
-divGCRT' :: (Fact m, CRTrans mon r, Unbox r) => mon (Arr m r -> Arr m r)
+divGCRT' :: (Fact m, CRTrans mon r, Unbox r, CRTIndex r ~ Int) => mon (Arr m r -> Arr m r)
 {-# INLINABLE divGCRT' #-}
 divGCRT' = (coerce (\x -> force . RT.zipWith (*) x) `asTypeOf` asTypeOf) <$> gInvCRT
 
@@ -51,7 +51,7 @@ wrapVector v = do
   return $ coerce $ force $ RT.fromFunction (Z:.n)
     (\(Z:.i) -> indexK vmat i 0)
 
-gCRT, gInvCRT :: (Fact m, CRTrans mon r, Unbox r) => mon (Arr m r)
+gCRT, gInvCRT :: (Fact m, CRTrans mon r, Unbox r, CRTIndex r ~ Int) => mon (Arr m r)
 {-# INLINABLE gCRT #-}
 {-# INLINABLE gInvCRT #-}
 
@@ -61,7 +61,7 @@ gCRT = wrapVector gCRTK
 gInvCRT = wrapVector gInvCRTK
 
 fCRT, fCRTInv ::
-  forall mon m r . (Fact m, CRTrans mon r, Unbox r, Elt r)
+  forall mon m r . (Fact m, CRTrans mon r, Unbox r, Elt r, CRTIndex r ~ Int)
   => mon (Arr m r -> Arr m r)
 
 {-# INLINABLE fCRT #-}
@@ -75,13 +75,13 @@ fCRT = evalM $ fTensor ppCRT
 -- | The inverse Chinese Remainder Transform.
 -- Exists if and only if CRT exists for all prime powers.
 fCRTInv = do
-  (_, mhatInv) :: (CRTInfo Int r) <- proxyT crtInfo (Proxy :: Proxy m)
+  (_, mhatInv) <- proxyT crtInfo (Proxy :: Proxy m)
   let totm = proxy totientFact (Proxy :: Proxy m)
       divMhat = trans totm $ RT.map (*mhatInv)
   evalM $ (divMhat .*) <$> fTensor ppCRTInv'
 
 ppDFT, ppDFTInv', ppCRT, ppCRTInv' ::
-  forall mon pp r . (PPow pp, CRTrans mon r, Unbox r, Elt r)
+  forall mon pp r . (PPow pp, CRTrans mon r, Unbox r, Elt r, CRTIndex r ~ Int)
   => TaggedT pp mon (Trans r)
 
 {-# INLINABLE ppDFT #-}
@@ -146,7 +146,7 @@ butterfly = trans 2 $ \arr ->
 
 -- DFT_p, CRT_p, scaled DFT_p^{ -1 } and CRT_p^{ -1 }
 pDFT, pDFTInv', pCRT, pCRTInv' ::
-  forall mon p r . (Prime p, CRTrans mon r, Unbox r, Elt r)
+  forall mon p r . (Prime p, CRTrans mon r, Unbox r, Elt r, CRTIndex r ~ Int)
   => TaggedT p mon (Trans r)
 
 {-# INLINABLE pDFT #-}
@@ -191,7 +191,7 @@ pCRTInv' =
 
 -- twiddle factors for DFT_pp and CRT_pp decompositions
 ppTwid, ppTwidHat ::
-  forall mon pp r . (PPow pp, CRTrans mon r, Unbox r)
+  forall mon pp r . (PPow pp, CRTrans mon r, Unbox r, CRTIndex r ~ Int)
   => Bool -> TaggedT pp mon (Trans r)
 
 {-# INLINABLE ppTwid #-}

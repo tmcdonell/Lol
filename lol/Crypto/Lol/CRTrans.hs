@@ -30,7 +30,7 @@ import Control.Arrow
 --
 --     (2) the multiplicative inverse of \(\hat{m}\in R\).
 
-type CRTInfo i r = (i -> r, r)
+type CRTInfo r = (CRTIndex r -> r, r)
 
 -- | A ring that (possibly) supports invertible Chinese remainder
 -- transformations of various indices.
@@ -41,11 +41,11 @@ type CRTInfo i r = (i -> r, r)
 -- it should be the case that \(\omega_{m'}^{m'/m}=\omega_m\).
 
 class (Monad mon, Ring r) => CRTrans mon r where
-
+  type CRTIndex r
   -- | 'CRTInfo' for a given index \(m\). The method itself may be
   -- slow, but the function it returns should be fast, e.g., via
   -- internal memoization.
-  crtInfo :: (Reflects m Int, ToInteger i) => TaggedT m mon (CRTInfo i r)
+  crtInfo :: (Reflects m Int) => TaggedT m mon (CRTInfo r)
 
 -- | A ring with a ring embedding into some ring @'CRTExt' r@ that has
 -- an invertible CRT transformation for /every/ positive index \(m\).
@@ -58,7 +58,8 @@ class (Ring r, Ring (CRTExt r)) => CRTEmbed r where
   fromExt :: CRTExt r -> r
 
 -- | Product ring
-instance (CRTrans mon a, CRTrans mon b) => CRTrans mon (a,b) where
+instance (CRTrans mon a, CRTrans mon b, CRTIndex a ~ Int, CRTIndex b ~ Int) => CRTrans mon (a,b) where
+  type CRTIndex (a,b) = CRTIndex a
   crtInfo = do
     (fa, inva) <- crtInfo
     (fb, invb) <- crtInfo
@@ -72,15 +73,16 @@ instance (CRTEmbed a, CRTEmbed b) => CRTEmbed (a,b) where
 
 -- | Complex numbers have 'CRTrans' for any index \(m\)
 instance (Monad mon, Transcendental a) => CRTrans mon (Complex a) where
+  type CRTIndex (Complex a) = Int
   crtInfo = crtInfoC
 
-crtInfoC :: forall mon m i a . (Monad mon, Reflects m Int, Transcendental a, ToInteger i)
-            => TaggedT m mon (CRTInfo i (Complex a))
+crtInfoC :: forall mon m a . (Monad mon, Reflects m Int, Transcendental a)
+            => TaggedT m mon (CRTInfo (Complex a))
 crtInfoC = let mval = proxy value (Proxy::Proxy m)
                mhat = valueHat mval
            in return (omegaPowC mval, recip $ fromIntegral mhat)
 
-omegaPowC :: (Transcendental a, ToInteger i) => Int -> i -> Complex a
+omegaPowC :: (Transcendental a) => Int -> Int -> Complex a
 omegaPowC m i = cis (2*pi*fromIntegral i / fromIntegral m)
 
 -- | Self-embed
@@ -90,13 +92,21 @@ instance (Transcendental a) => CRTEmbed (Complex a) where
   fromExt = id
 
 -- | Returns 'Nothing'
-instance CRTrans Maybe Double where crtInfo = tagT Nothing
+instance CRTrans Maybe Double where
+  type CRTIndex Double = Int
+  crtInfo = tagT Nothing
 -- | Returns 'Nothing'
-instance CRTrans Maybe Int where crtInfo = tagT Nothing
+instance CRTrans Maybe Int where
+  type CRTIndex Int = Int
+  crtInfo = tagT Nothing
 -- | Returns 'Nothing'
-instance CRTrans Maybe Int64 where crtInfo = tagT Nothing
+instance CRTrans Maybe Int64 where
+  type CRTIndex Int64 = Int
+  crtInfo = tagT Nothing
 -- | Returns 'Nothing'
-instance CRTrans Maybe Integer where crtInfo = tagT Nothing
+instance CRTrans Maybe Integer where
+  type CRTIndex Integer = Int
+  crtInfo = tagT Nothing
 -- can also do for Int8, Int16, Int32 etc.
 
 -- | Embeds into the complex numbers \(\C\).

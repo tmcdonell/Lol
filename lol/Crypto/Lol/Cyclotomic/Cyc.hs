@@ -64,7 +64,7 @@ import Crypto.Lol.Cyclotomic.UCyc hiding (coeffsDec, coeffsPow, crtSet,
 
 import           Crypto.Lol.CRTrans
 import qualified Crypto.Lol.Cyclotomic.RescaleCyc as R
-import           Crypto.Lol.Cyclotomic.Tensor     (TElt, Tensor)
+import           Crypto.Lol.Cyclotomic.Tensor     (TElt, TRep, Tensor)
 import qualified Crypto.Lol.Cyclotomic.UCyc       as U
 import           Crypto.Lol.Gadget
 import           Crypto.Lol.Prelude               as LP
@@ -329,7 +329,7 @@ mulG (Sub c) = mulG $ embed' c   -- must go to full ring
 -- WARNING: this implementation is not a constant-time algorithm, so
 -- information about the argument may be leaked through a timing
 -- channel.
-divG :: (Fact m, CElt t r, IntegralDomain r)
+divG :: (Fact m, CElt t r, IntegralDomain (TRep t r))
         => Cyc t m r -> Maybe (Cyc t m r)
 {-# INLINABLE divG #-}
 divG (Pow u) = Pow <$> U.divGPow u

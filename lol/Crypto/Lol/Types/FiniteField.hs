@@ -90,10 +90,12 @@ instance (GFCtx fp d) => Field.C (GF fp d) where
 
 instance (GFCtx fp d) => CRTrans Maybe (GF fp d) where
 
-  crtInfo :: forall m i . (Reflects m Int, ToInteger i) => TaggedT m Maybe (CRTInfo i (GF fp d))
+  type CRTIndex (GF fp d) = Int
+
+  crtInfo :: forall m . (Reflects m Int) => TaggedT m Maybe (CRTInfo (GF fp d))
   crtInfo = tagT $ (,) <$> omegaPow <*> scalarInv
     where
-      omegaPow :: Maybe (i -> GF fp d)
+      omegaPow :: Maybe (Int -> GF fp d)
       omegaPow =
         let size' = proxy size (Proxy :: Proxy (GF fp d))
             mval = proxy value (Proxy :: Proxy m) :: Int
@@ -102,7 +104,7 @@ instance (GFCtx fp d) => CRTrans Maybe (GF fp d) where
             omega = gen^q
             omegaPows = V.iterateN mval (*omega) one
         in if r == 0
-           then Just $ (omegaPows V.!) . (`mod` mval) . fromIntegral
+           then Just $ (omegaPows V.!) . (`mod` mval)
            else Nothing
       scalarInv :: Maybe (GF fp d)
       scalarInv = Just $ recip $ fromIntegral $ valueHat

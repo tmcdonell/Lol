@@ -111,9 +111,11 @@ data UCyc t (m :: Factored) rep r where
   CRTE :: !(ESentinel t m r) -> !(t m (CRTExt r)) -> UCyc t m E r
 
 -- | Constraints needed for CRT-related operations on 'UCyc' data.
-type UCRTElt t r = (Tensor t, CRTEmbed r,
-                    CRTrans Maybe r, TElt t r,
-                    CRTrans Identity (CRTExt r), TElt t (CRTExt r))
+type UCRTElt t r = (Tensor t, CRTEmbed (TRep t r),
+                    CRTrans Maybe (TRep t r), TElt t r,
+                    CRTrans Identity (CRTExt (TRep t r)), TElt t (CRTExt r),
+                    CRTExt (TRep t r) ~ TRep t (CRTExt r),
+                    ZpOf (TRep t r) ~ TRep t (ZpOf r))
 
 -- | Convenient synonym for 'deepseq'-able element type.
 type NFElt r = (NFData r, NFData (CRTExt r))
@@ -371,13 +373,13 @@ mulG (CRTE s v) = CRTE s $ runIdentity mulGCRT v
 -- WARNING: this implementation is not a constant-time algorithm, so
 -- information about the argument may be leaked through a timing
 -- channel.
-divGPow :: (Fact m, UCRTElt t r, ZeroTestable r, IntegralDomain r)
+divGPow :: (Fact m, UCRTElt t r, ZeroTestable r, IntegralDomain (TRep t r))
         => UCyc t m P r -> Maybe (UCyc t m P r)
 {-# INLINABLE divGPow #-}
 divGPow (Pow v) = Pow <$> T.divGPow v
 
 -- | Similar to 'divGPow'.
-divGDec :: (Fact m, UCRTElt t r, ZeroTestable r, IntegralDomain r)
+divGDec :: (Fact m, UCRTElt t r, ZeroTestable r, IntegralDomain (TRep t r))
         => UCyc t m D r -> Maybe (UCyc t m D r)
 {-# INLINABLE divGDec #-}
 divGDec (Dec v) = Dec <$> T.divGDec v
@@ -410,8 +412,8 @@ tGaussian = fmap Dec . tGaussianDec
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
 errorRounded :: forall v rnd t m z .
-                (ToInteger z, Tensor t, Fact m, TElt t z,
-                 ToRational v, MonadRandom rnd)
+                (ToInteger z, Tensor t, Fact m, TElt t z, Ring (TRep t z),
+                 ToRational v, MonadRandom rnd, Transcendental (TRep t Double))
                 => v -> rnd (UCyc t m D z)
 {-# INLINABLE errorRounded #-}
 errorRounded svar =
@@ -437,13 +439,13 @@ errorCoset =
 ----- inter-ring operations
 
 -- | Embed into an extension ring, for the powerful basis.
-embedPow :: (Additive r, Tensor t, m `Divides` m', TElt t r)
+embedPow :: (Additive (TRep t r), Tensor t, m `Divides` m', TElt t r)
             => UCyc t m P r -> UCyc t m' P r
 embedPow (Pow v) = Pow $ T.embedPow v
 {-# INLINABLE embedPow #-}
 
 -- | Embed into an extension ring, for the decoding basis.
-embedDec :: (Additive r, Tensor t, m `Divides` m', TElt t r)
+embedDec :: (Additive (TRep t r), Tensor t, m `Divides` m', TElt t r)
             => UCyc t m D r -> UCyc t m' D r
 embedDec (Dec v) = Dec $ T.embedDec v
 {-# INLINABLE embedDec #-}
@@ -471,13 +473,13 @@ embedCRTE x@(CRTE _ v) =
     Right _ -> Left $ embedPow $ toPow x
 
 -- | Twace into a subring, for the powerful basis.
-twacePow :: (Ring r, Tensor t, m `Divides` m', TElt t r)
+twacePow :: (Ring (TRep t r), Tensor t, m `Divides` m', TElt t r)
             => UCyc t m' P r -> UCyc t m P r
 twacePow (Pow v) = Pow $ twacePowDec v
 {-# INLINABLE twacePow #-}
 
 -- | Twace into a subring, for the decoding basis.
-twaceDec :: (Ring r, Tensor t, m `Divides` m', TElt t r)
+twaceDec :: (Ring (TRep t r), Tensor t, m `Divides` m', TElt t r)
             => UCyc t m' D r -> UCyc t m D r
 twaceDec (Dec v) = Dec $ twacePowDec v
 {-# INLINABLE twaceDec #-}
@@ -528,7 +530,8 @@ powBasis = (Pow <$>) <$> powBasisPow
 -- represented with respect to the powerful basis (which seems to be
 -- the best choice for typical use cases).
 crtSet :: forall t m m' r p mbar m'bar .
-           (m `Divides` m', ZPP r, p ~ CharOf (ZpOf r),
+           (m `Divides` m', Eq (ZpOf r), ZeroTestable (ZpOf r), ZPP r,
+            ZPP (TRep t r), p ~ CharOf (ZpOf r),
             mbar ~ PFree p m, m'bar ~ PFree p m',
             UCRTElt t r, TElt t (ZpOf r))
            => Tagged m [UCyc t m' P r]
@@ -586,7 +589,6 @@ toCRT = let fromPow :: t m r -> UCycEC t m r
                    (CRTE _ _) -> Left x
                    (Pow v) -> fromPow v
                    (Dec v) -> fromPow $ l v
-
 
 ---------- Category-theoretic instances ----------
 

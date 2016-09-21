@@ -236,7 +236,8 @@ instance Fact m => Traversable (CT m) where
 
 instance Tensor CT where
 
-  type TElt CT r = (Storable r, Dispatch r)
+  type TElt CT r = (Storable r, Dispatch r, CRTIndex r ~ Int)
+  type TRep CT r = r
 
   entailIndexT = tag $ Sub Dict
   entailEqT = tag $ Sub Dict
@@ -378,7 +379,7 @@ gSqNormDec' :: (Storable r, Fact m, Dispatch r)
                => Tagged m (CT' m r -> r)
 gSqNormDec' = return $ (! 0) . unCT . unsafePerformIO . withBasicArgs dnorm
 
-ctCRT :: (Storable r, CRTrans mon r, Dispatch r, Fact m)
+ctCRT :: (Storable r, CRTrans mon r, Dispatch r, Fact m, CRTIndex r ~ Int)
          => TaggedT m mon (CT' m r -> CT' m r)
 ctCRT = do
   ru' <- ru
@@ -386,7 +387,7 @@ ctCRT = do
     withPtrArray ru' (flip withBasicArgs x . dcrt)
 
 -- CTensor CRT^(-1) functions take inverse rus
-ctCRTInv :: forall mon m r . (Storable r, CRTrans mon r, Dispatch r, Fact m)
+ctCRTInv :: forall mon m r . (Storable r, CRTrans mon r, Dispatch r, Fact m, CRTIndex r ~ Int)
          => TaggedT m mon (CT' m r -> CT' m r)
 ctCRTInv = do
   mhatInv <- snd <$> (crtInfo :: TaggedT m mon (Int -> r, r))
@@ -459,7 +460,7 @@ scalarPow' =
   let n = proxy totientFact (Proxy::Proxy m)
   in \r -> CT' $ generate n (\i -> if i == 0 then r else zero)
 
-ru, ruInv :: (CRTrans mon r, Fact m, Storable r)
+ru, ruInv :: (CRTrans mon r, Fact m, Storable r, CRTIndex r ~ Int)
    => TaggedT m mon [Vector r]
 ru = do
   mval <- pureT valueFact
@@ -488,7 +489,7 @@ wrapVector v = do
   let n = proxy totientFact (Proxy::Proxy m)
   return $ CT' $ generate n (flip (indexK vmat) 0)
 
-gCRT, gInvCRT :: (Storable r, CRTrans mon r, Fact m)
+gCRT, gInvCRT :: (Storable r, CRTrans mon r, Fact m, CRTIndex r ~ Int)
                  => mon (CT' m r)
 gCRT = wrapVector gCRTK
 gInvCRT = wrapVector gInvCRTK

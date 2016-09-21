@@ -16,6 +16,7 @@ import Crypto.Lol.Cyclotomic.Tensor.RepaTensor.Extension
 import Crypto.Lol.Cyclotomic.Tensor.RepaTensor.GL
 import Crypto.Lol.Cyclotomic.Tensor.RepaTensor.RTCommon  as RT hiding
                                                                 ((++))
+import Crypto.Lol.CRTrans
 import Crypto.Lol.Prelude                                as LP
 import Crypto.Lol.Reflects
 import Crypto.Lol.Types.FiniteField                      as FF
@@ -136,7 +137,8 @@ wrapM f (ZV v) = RT <$> f (zvToArr v)
 
 instance Tensor RT where
 
-  type TElt RT r = (Unbox r, Elt r)
+  type TElt RT r = (Unbox r, Elt r, CRTIndex r ~ Int)
+  type TRep RT r = r
 
   entailIndexT  = tag $ Sub Dict
   entailEqT     = tag $ Sub Dict
