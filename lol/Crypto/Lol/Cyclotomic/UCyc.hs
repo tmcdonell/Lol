@@ -111,7 +111,7 @@ data UCyc t (m :: Factored) rep r where
   CRTE :: !(ESentinel t m r) -> !(t m (CRTExt r)) -> UCyc t m E r
 
 -- | Constraints needed for CRT-related operations on 'UCyc' data.
-type UCRTElt t r = (Tensor t, CRTEmbed (TRep t r),
+type UCRTElt t r = (Tensor t, CRTEmbed (TRep t r), CRTEmbed r,
                     CRTrans Maybe (TRep t r), TElt t r,
                     CRTrans Identity (CRTExt (TRep t r)), TElt t (CRTExt r),
                     CRTExt (TRep t r) ~ TRep t (CRTExt r),
@@ -171,7 +171,7 @@ instance (ZeroTestable r, Tensor t, Fact m, TElt t r)
 
 -- Additive instances
 
-instance (Additive r, Tensor t, Fact m, TElt t r) => Additive.C (UCyc t m P r) where
+instance (Additive (TRep t r), Additive r, Tensor t, Fact m, TElt t r) => Additive.C (UCyc t m P r) where
   zero = Pow $ T.scalarPow zero
   (Pow v1) + (Pow v2) = Pow $ zipWithT (+) v1 v2
   (Pow v1) - (Pow v2) = Pow $ zipWithT (-) v1 v2
@@ -181,7 +181,7 @@ instance (Additive r, Tensor t, Fact m, TElt t r) => Additive.C (UCyc t m P r) w
   {-# INLINABLE (-) #-}
   {-# INLINABLE negate #-}
 
-instance (Additive r, Tensor t, Fact m, TElt t r) => Additive.C (UCyc t m D r) where
+instance (Additive (TRep t r), Additive r, Tensor t, Fact m, TElt t r) => Additive.C (UCyc t m D r) where
   zero = Dec $ T.scalarPow zero -- scalarPow works because it's zero
   (Dec v1) + (Dec v2) = Dec $ zipWithT (+) v1 v2
   (Dec v1) - (Dec v2) = Dec $ zipWithT (-) v1 v2
@@ -193,7 +193,7 @@ instance (Additive r, Tensor t, Fact m, TElt t r) => Additive.C (UCyc t m D r) w
 
 -- | only for appropriate CRT representation (otherwise 'zero' would
 -- violate internal invariant)
-instance (Fact m, UCRTElt t r) => Additive.C (UCycEC t m r) where
+instance (Fact m, UCRTElt t r, Additive r) => Additive.C (UCycEC t m r) where
 
   zero = scalarCRT zero
 
@@ -216,7 +216,7 @@ instance (Fact m, UCRTElt t r) => Additive.C (UCycEC t m r) where
   {-# INLINABLE negate #-}
 
 -- | only for appropriate CRT representation
-instance (Fact m, UCRTElt t r) => Ring.C (UCycEC t m r) where
+instance (Fact m, UCRTElt t r, Ring r) => Ring.C (UCycEC t m r) where
 
   one = scalarCRT one
   fromInteger c = scalarCRT $ fromInteger c
@@ -230,36 +230,36 @@ instance (Fact m, UCRTElt t r) => Ring.C (UCycEC t m r) where
   {-# INLINABLE (*) #-}
 
 
-instance (Ring r, Tensor t, Fact m, TElt t r) => Module.C r (UCyc t m P r) where
-  r *> (Pow v) = Pow $ fmapT (r *) v
+instance (Ring (TRep t r), Ring r, Tensor t, Fact m, TElt t r) => Module.C r (UCyc t m P r) where
+  r *> (Pow v) = Pow $ fmapT (proxy (rep r) (Proxy::Proxy t) *) v
   {-# INLINABLE (*>) #-}
 
-instance (Ring r, Tensor t, Fact m, TElt t r) => Module.C r (UCyc t m D r) where
-  r *> (Dec v) = Dec $ fmapT (r *) v
+instance (Ring (TRep t r), Ring r, Tensor t, Fact m, TElt t r) => Module.C r (UCyc t m D r) where
+  r *> (Dec v) = Dec $ fmapT (proxy (rep r) (Proxy::Proxy t) *) v
   {-# INLINABLE (*>) #-}
 
 instance (Ring r, Fact m, UCRTElt t r) => Module.C r (UCycEC t m r) where
 
-  r *> (Right (CRTC s v)) = Right $ CRTC s $ fmapT (r *) v
-  r *> (Left (CRTE s v)) = Left $ CRTE s $ fmapT (toExt r *) v
+  r *> (Right (CRTC s v)) = Right $ CRTC s $ fmapT (proxy (rep r) (Proxy::Proxy t) *) v
+  r *> (Left (CRTE s v)) = Left $ CRTE s $ fmapT (toExt (proxy (rep r) (Proxy::Proxy t)) *) v
   {-# INLINABLE (*>) #-}
 
 -- | \(R_p\) is an \(\F_{p^d}\)-module when \(d\) divides \(\varphi(m)\), by
 -- applying \(d\)-dimensional \(\F_p\)-linear transform on \(d\)-dim chunks of
 -- powerful basis coeffs.
-instance (GFCtx fp d, Fact m, Tensor t, TElt t fp)
+instance (GFCtx fp d, Fact m, Tensor t, TElt t fp, Additive (TRep t fp))
          => Module.C (GF fp d) (UCyc t m P fp) where
   -- can use any r-basis to define module mult, but must be
   -- consistent.
   r *> (Pow v) = Pow $ r LP.*> v \\ witness entailModuleT (r,v)
 
 
-instance (Reduce a b, Tensor t, Fact m, TElt t a, TElt t b)
+instance (Reduce (TRep t a) (TRep t b), Additive a, Additive b, Tensor t, Fact m, TElt t a, TElt t b)
     => Reduce (UCyc t m P a) (UCyc t m P b) where
   reduce (Pow v) = Pow $ fmapT reduce v
   {-# INLINABLE reduce #-}
 
-instance (Reduce a b, Tensor t, Fact m, TElt t a, TElt t b)
+instance (Reduce (TRep t a) (TRep t b), Additive a, Additive b, Tensor t, Fact m, TElt t a, TElt t b)
     => Reduce (UCyc t m D a) (UCyc t m D b) where
   reduce (Dec v) = Dec $ fmapT reduce v
   {-# INLINABLE reduce #-}
@@ -270,24 +270,26 @@ instance (Reduce a b, Tensor t, Fact m, TElt t a, TElt t b)
 type instance LiftOf (UCyc t m P r) = UCyc t m P (LiftOf r)
 type instance LiftOf (UCyc t m D r) = UCyc t m D (LiftOf r)
 
-instance (Lift' r, Tensor t, Fact m, TElt t r, TElt t (LiftOf r))
+instance (Lift' (TRep t r), Tensor t, Fact m, TElt t r, TElt t (LiftOf r),
+          LiftOf (TRep t r) ~ TRep t (LiftOf r), Reduce (LiftOf r) r)
          => Lift' (UCyc t m P r) where
   lift (Pow v) = Pow $ fmapT lift v
   {-# INLINABLE lift #-}
 
-instance (Lift' r, Tensor t, Fact m, TElt t r, TElt t (LiftOf r))
+instance (Lift' (TRep t r), Tensor t, Fact m, TElt t r, TElt t (LiftOf r),
+          LiftOf (TRep t r) ~ TRep t (LiftOf r), Reduce (LiftOf r) r)
          => Lift' (UCyc t m D r) where
   lift (Dec v) = Dec $ fmapT lift v
   {-# INLINABLE lift #-}
 
 -- CJP: no Lift' for C because CRT basis may not exist for target type
 
-instance (Rescale a b, Tensor t, Fact m, TElt t a, TElt t b)
+instance (Rescale (TRep t a) (TRep t b), Additive a, Additive b, Tensor t, Fact m, TElt t a, TElt t b)
          => Rescale (UCyc t m P a) (UCyc t m P b) where
   rescale (Pow v) = Pow $ fmapT rescale v
   {-# INLINABLE rescale #-}
 
-instance (Rescale a b, Tensor t, Fact m, TElt t a, TElt t b)
+instance (Rescale (TRep t a) (TRep t b), Additive a, Additive b, Tensor t, Fact m, TElt t a, TElt t b)
          => Rescale (UCyc t m D a) (UCyc t m D b) where
   rescale (Dec v) = Dec $ fmapT rescale v
   {-# INLINABLE rescale #-}
@@ -305,14 +307,14 @@ instance (Rescale a b, Tensor t, Fact m, TElt t a, TElt t b)
 -- | Type-restricted (and potentially more efficient) 'fmap' for
 -- powerful-basis representation.
 fmapPow :: (Tensor t, Fact m, TElt t a, TElt t b)
-           => (a -> b) -> UCyc t m P a -> UCyc t m P b
+           => (TRep t a -> TRep t b) -> UCyc t m P a -> UCyc t m P b
 fmapPow f (Pow v) = Pow $ fmapT f v
 {-# INLINABLE fmapPow #-}
 
 -- | Type-restricted (and potentially more efficient) 'fmap' for
 -- decoding-basis representation.
 fmapDec :: (Tensor t, Fact m, TElt t a, TElt t b)
-           => (a -> b) -> UCyc t m D a -> UCyc t m D b
+           => (TRep t a -> TRep t b) -> UCyc t m D a -> UCyc t m D b
 fmapDec f (Dec v) = Dec $ fmapT f v
 {-# INLINABLE fmapDec #-}
 
@@ -358,7 +360,7 @@ unzipCRTE (CRTE _ v)
 
 
 -- | Multiply by the special element \(g_m\).
-mulG :: (Fact m, UCRTElt t r) => UCyc t m rep r -> UCyc t m rep r
+mulG :: (Fact m, UCRTElt t r, Ring r) => UCyc t m rep r -> UCyc t m rep r
 {-# INLINE mulG #-}
 mulG (Pow v) = Pow $ mulGPow v
 mulG (Dec v) = Dec $ mulGDec v
@@ -400,7 +402,7 @@ gSqNorm (Dec v) = gSqNormDec v
 -- | Sample from the "tweaked" Gaussian error distribution \(t\cdot D\) in
 -- the decoding basis, where \(D\) has scaled variance \(v\).
 tGaussian :: (Tensor t, Fact m, OrdFloat q, Random q, TElt t q,
-              ToRational v, MonadRandom rnd)
+              ToRational v, MonadRandom rnd, Transcendental (TRep t q))
              => v -> rnd (UCyc t m D q)
 tGaussian = fmap Dec . tGaussianDec
 {-# INLINABLE tGaussian #-}
@@ -412,8 +414,10 @@ tGaussian = fmap Dec . tGaussianDec
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
 errorRounded :: forall v rnd t m z .
-                (ToInteger z, Tensor t, Fact m, TElt t z, Ring (TRep t z),
-                 ToRational v, MonadRandom rnd, Transcendental (TRep t Double))
+                (FromIntegral z Double, Tensor t, Fact m, TElt t z, Ring (TRep t z),
+                 ToRational v, MonadRandom rnd, Transcendental (TRep t Double),
+                 Eq (TRep t z), RealField (TRep t Double),
+                 FromIntegral (TRep t z) (TRep t Double))
                 => v -> rnd (UCyc t m D z)
 {-# INLINABLE errorRounded #-}
 errorRounded svar =
@@ -426,12 +430,13 @@ errorRounded svar =
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
 errorCoset :: forall t m zp z v rnd .
-  (Mod zp, z ~ ModRep zp, Lift zp z, Tensor t, Fact m,
-   ToRational v, MonadRandom rnd)
+  (Mod zp, z ~ ModRep zp, Lift zp z, Tensor t, Fact m, Eq (TRep t z),
+   ToRational v, MonadRandom rnd, Eq z, Ring z, FromIntegral z Double,
+   FromIntegral z v, Transcendental (TRep t Double))
   => v -> UCyc t m D zp -> rnd (UCyc t m D z)
 {-# INLINABLE errorCoset #-}
 errorCoset =
-  let pval = fromIntegral $ proxy modulus (Proxy::Proxy zp)
+  let pval = fromIntegral' $ proxy modulus (Proxy::Proxy zp)
   in \ svar c -> do err :: UCyc t m D Double <- tGaussian (svar*pval*pval)
                     return $! roundCoset <$> c <*> err
 

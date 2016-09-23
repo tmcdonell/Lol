@@ -19,13 +19,14 @@ module Crypto.Lol.Types.Numeric
 ( module Crypto.Lol.Types.Numeric -- everything we define here
 , module NumericPrelude         -- re-export
 , Int64                         -- commonly used
+, FromIntegral(..)
 ) where
 
 import Control.DeepSeq
 import Control.Monad.Random
 
 -- NumericPrelude has silly types for these functions
-import           NumericPrelude         hiding (abs, max, min, (^))
+import           NumericPrelude         hiding (abs, max, min, (^), round)
 import qualified NumericPrelude.Numeric (abs)
 import qualified Prelude                (max, min)
 
@@ -38,7 +39,7 @@ import qualified Algebra.Module               (C)
 import qualified Algebra.PrincipalIdealDomain (C)
 import qualified Algebra.RealField            (C)
 import qualified Algebra.RealIntegral         (C)
-import qualified Algebra.RealRing             (C)
+import qualified Algebra.RealRing             (C, roundSimple)
 import qualified Algebra.RealTranscendental   (C)
 import qualified Algebra.Ring                 (C)
 import qualified Algebra.ToInteger            (C)
@@ -140,6 +141,9 @@ type Polynomial a = MathObj.Polynomial.T a
 -- | Sane synonym for 'MathObj.Matrix.T'.
 type Matrix a = MathObj.Matrix.T a
 
+class FromIntegral a b where
+  fromIntegral' :: a -> b
+
 -- 'IntegralDomain' instance for 'Double'
 instance Algebra.IntegralDomain.C Double where
     _ `div` 0 = error "cannot divide Double by 0\n"
@@ -189,10 +193,17 @@ decomp [] v = [v]
 decomp (b:bs) v = let (q,r) = v `divModCent` b
                   in r : decomp bs q
 
+-- | This function rounds to the closest integer. For fraction x == 0.5
+-- it rounds away from zero. This function is not the result of an ingenious
+-- mathematical insight, but is simply a kind of rounding that is the fastest
+-- on IEEE floating point architectures.
+round :: (RealRing a, Ring b) => a -> b
+round = Algebra.RealRing.roundSimple
+
 -- | Deterministically round to the nearest multiple of \( i \).
-roundMult :: (RealField r, ToInteger i) => i -> r -> i
+roundMult :: (RealField r, Eq i, FromIntegral i r, Ring i) => i -> r -> i
 roundMult 1 r  = round r
-roundMult i r = let r' = r / fromIntegral i in i * round r'
+roundMult i r = let r' = r / fromIntegral' i in i * round r'
 
 -- | Randomly round to the nearest larger or smaller multiple of \( i \),
 -- where the round-off term has expectation zero.

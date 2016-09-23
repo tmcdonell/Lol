@@ -41,6 +41,7 @@ type CRTInfo r = (CRTIndex r -> r, r)
 -- it should be the case that \(\omega_{m'}^{m'/m}=\omega_m\).
 
 class (Monad mon, Ring r) => CRTrans mon r where
+  -- | Type of the input to the function in @CRTInfo r@
   type CRTIndex r
   -- | 'CRTInfo' for a given index \(m\). The method itself may be
   -- slow, but the function it returns should be fast, e.g., via

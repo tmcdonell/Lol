@@ -90,7 +90,7 @@ class Enumerable a where
   values :: [a]
 
 -- | Represents a quotient group modulo some integer.
-class (ToInteger (ModRep a), Additive a) => Mod a where
+class (Additive a) => Mod a where
   type ModRep a
   modulus :: Tagged a (ModRep a)
 
@@ -135,8 +135,8 @@ msdToLSD = (recip *** recip) lsdToMSD
 
 -- | A default implementation of rescaling for 'Mod' types.
 rescaleMod :: forall a b .
-              (Mod a, Mod b, (ModRep a) ~ (ModRep b),
-               Lift a (ModRep b), Ring b)
+              (Mod a, Mod b, ToInteger (ModRep b), Ring b,
+               (ModRep a) ~ (ModRep b), Lift a (ModRep b))
               => a -> b
 {-# INLINABLE rescaleMod #-}
 rescaleMod =
@@ -147,18 +147,18 @@ rescaleMod =
 
 -- | Deterministically round to a nearby value in the desired coset.
 roundCoset :: forall zp z r .
-              (Mod zp, z ~ ModRep zp, Lift zp z, RealField r) => zp -> r -> z
+              (Mod zp, Eq z, Ring z, z ~ ModRep zp, Lift zp z, RealField r, FromIntegral z r) => zp -> r -> z
 {-# INLINABLE roundCoset #-}
 roundCoset = let pval = proxy modulus (Proxy::Proxy zp)
              in \ zp x -> let rep = lift zp
-                          in rep + roundMult pval (x - fromIntegral rep)
+                          in rep + roundMult pval (x - fromIntegral' rep)
 
 ---------- Instances for product groups/rings ----------
 
 type instance LiftOf (a,b) = Integer
 
 -- | Lift product ring of \(\Z_q\)s to 'Integer'
-instance (Mod a, Mod b, Lift' a, Lift' b, Reduce Integer (a,b),
+instance (Mod a, Mod b, ToInteger (ModRep a), ToInteger (ModRep b), Lift' a, Lift' b, Reduce Integer (a,b),
           ToInteger (LiftOf a), ToInteger (LiftOf b))
          => Lift' (a,b) where
 
@@ -201,7 +201,7 @@ instance (IntegralDomain a, IntegralDomain b) => IntegralDomain.C (a,b) where
   {-# INLINABLE divMod #-}
 
 -- | Product ring of \(\Z_q\)s as a \(\Z_q\) (with 'Integer' modulus)
-instance (Mod a, Mod b) => Mod (a,b) where
+instance (Mod a, Mod b, ToInteger (ModRep a), ToInteger (ModRep b)) => Mod (a,b) where
   type ModRep (a,b) = Integer
 
   modulus = tag $ fromIntegral (proxy modulus (Proxy::Proxy a)) *

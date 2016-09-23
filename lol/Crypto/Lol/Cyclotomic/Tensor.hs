@@ -53,9 +53,6 @@ import           Data.Traversable
 import           Data.Tuple              (swap)
 import qualified Data.Vector             as V
 import qualified Data.Vector.Generic     as G
-import qualified Data.Vector.Unboxed     as U ( Vector, Unbox )
-import qualified Data.Vector.Storable    as S ( Vector, Storable )
-
 
 -- | 'Tensor' encapsulates all the core linear transformations needed
 -- for cyclotomic ring arithmetic.
@@ -81,7 +78,11 @@ class (TElt t Double, TElt t (Complex Double)) => Tensor t where
 
   -- | Constraints needed by @t@ to hold type @r@.
   type TElt t r :: Constraint
+  -- | The type actually held in the tensor @t@.
   type TRep t r
+
+  -- | Embed from @r@ to @TRep t r@
+  rep :: (TElt t r) => r -> Tagged t (TRep t r)
 
   -- | Properties that hold for any index. Use with '\\'.
   entailIndexT :: Tagged (t m r)

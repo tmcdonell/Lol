@@ -74,7 +74,7 @@ instance (R.Elt a) => R.Elt (Complex a) where
     one = Complex $ R.one C.+: R.zero
 
 -- | Rounds the real and imaginary components to the nearest integer.
-roundComplex :: (RealRing a, ToInteger b) => Complex a -> (b,b)
+roundComplex :: (RealRing a, Ring b) => Complex a -> (b,b)
 roundComplex (Complex x) = (round $ C.real x, round $ C.imag x)
 
 -- | 'cis' \(t\) is a complex value with magnitude 1 and phase \(t \bmod 2\cdot\pi\)).

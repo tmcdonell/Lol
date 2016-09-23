@@ -91,7 +91,7 @@ instance (Decompose gad a, Decompose gad b, DecompOf a ~ DecompOf b)
 
 -- | Product ring
 instance (Correct gad a, Correct gad b,
-          Mod a, Mod b, Field a, Field b, Lift' a, Lift' b,
+          Mod a, Mod b, ToInteger (ModRep a), ToInteger (ModRep b), Field a, Field b, Lift' a, Lift' b,
           ToInteger (LiftOf a), ToInteger (LiftOf b))
     => Correct gad (a,b) where
 
