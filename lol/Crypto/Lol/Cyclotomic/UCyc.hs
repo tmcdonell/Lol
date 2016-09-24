@@ -270,15 +270,17 @@ instance (Reduce (TRep t a) (TRep t b), Additive a, Additive b, Tensor t, Fact m
 type instance LiftOf (UCyc t m P r) = UCyc t m P (LiftOf r)
 type instance LiftOf (UCyc t m D r) = UCyc t m D (LiftOf r)
 
-instance (Lift' (TRep t r), Tensor t, Fact m, TElt t r, TElt t (LiftOf r),
-          LiftOf (TRep t r) ~ TRep t (LiftOf r), Reduce (LiftOf r) r)
+instance (Reduce (LiftOf r) r,
+          Tensor t, Fact m, TElt t r, TElt t (LiftOf r),
+          Lift' (TRep t r), LiftOf (TRep t r) ~ TRep t (LiftOf r))
          => Lift' (UCyc t m P r) where
   lift (Pow v) = Pow $ fmapT lift v
   {-# INLINABLE lift #-}
 
-instance (Lift' (TRep t r), Tensor t, Fact m, TElt t r, TElt t (LiftOf r),
-          LiftOf (TRep t r) ~ TRep t (LiftOf r), Reduce (LiftOf r) r)
-         => Lift' (UCyc t m D r) where
+instance (Reduce (LiftOf r) r, -- superclass
+          Tensor t, Fact m, TElt t r, TElt t (LiftOf r), -- use of fmapT
+          Lift' (TRep t r), LiftOf (TRep t r) ~ TRep t (LiftOf r) -- use of lift
+          ) => Lift' (UCyc t m D r) where
   lift (Dec v) = Dec $ fmapT lift v
   {-# INLINABLE lift #-}
 
@@ -360,7 +362,7 @@ unzipCRTE (CRTE _ v)
 
 
 -- | Multiply by the special element \(g_m\).
-mulG :: (Fact m, UCRTElt t r, Ring r) => UCyc t m rep r -> UCyc t m rep r
+mulG :: (Fact m, UCRTElt t r) => UCyc t m rep r -> UCyc t m rep r
 {-# INLINE mulG #-}
 mulG (Pow v) = Pow $ mulGPow v
 mulG (Dec v) = Dec $ mulGDec v
@@ -414,7 +416,7 @@ tGaussian = fmap Dec . tGaussianDec
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
 errorRounded :: forall v rnd t m z .
-                (FromIntegral z Double, Tensor t, Fact m, TElt t z, Ring (TRep t z),
+                (Tensor t, Fact m, TElt t z, Ring (TRep t z),
                  ToRational v, MonadRandom rnd, Transcendental (TRep t Double),
                  Eq (TRep t z), RealField (TRep t Double),
                  FromIntegral (TRep t z) (TRep t Double))
@@ -430,7 +432,7 @@ errorRounded svar =
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
 errorCoset :: forall t m zp z v rnd .
-  (Mod zp, z ~ ModRep zp, Lift zp z, Tensor t, Fact m, Eq (TRep t z),
+  (Mod zp, z ~ ModRep zp, Lift zp z, Tensor t, Fact m,
    ToRational v, MonadRandom rnd, Eq z, Ring z, FromIntegral z Double,
    FromIntegral z v, Transcendental (TRep t Double))
   => v -> UCyc t m D zp -> rnd (UCyc t m D z)
@@ -535,7 +537,7 @@ powBasis = (Pow <$>) <$> powBasisPow
 -- represented with respect to the powerful basis (which seems to be
 -- the best choice for typical use cases).
 crtSet :: forall t m m' r p mbar m'bar .
-           (m `Divides` m', Eq (ZpOf r), ZeroTestable (ZpOf r), ZPP r,
+           (m `Divides` m', ZPP r,
             ZPP (TRep t r), p ~ CharOf (ZpOf r),
             mbar ~ PFree p m, m'bar ~ PFree p m',
             UCRTElt t r, TElt t (ZpOf r))

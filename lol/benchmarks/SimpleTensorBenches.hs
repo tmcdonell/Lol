@@ -15,8 +15,8 @@ import Control.Monad.Random
 
 import Crypto.Lol.Prelude
 import Crypto.Lol.Cyclotomic.Tensor
-import Crypto.Lol.Types
-import Crypto.Random.DRBG
+import Crypto.Lol.Types (CryptoRand)
+import Crypto.Random
 
 import Criterion
 
@@ -32,7 +32,7 @@ simpleTensorBenches1 (Proxy :: Proxy '(t,m,r)) (Proxy::Proxy (gen :: *)) = do
     bench "unzipPow"    $ nf unzipT x1,
     bench "unzipDec"    $ nf unzipT x1,
     bench "unzipCRT"    $ nf unzipT x1,
-    bench "zipWith (*)" $ nf (zipWithT (*) x2) x3,
+    bench "zipWith (*)" $ nf (zipWithT (*) x2 :: t m r -> t m r) x3,
     bench "crt"         $ nf (fromJust' "SimpleTensorBenches.crt" crt) x2,
     bench "crtInv"      $ nf (fromJust' "SimpleTensorBenches.crtInv" crtInv) x2,
     bench "l"           $ nf l x2,
@@ -43,7 +43,7 @@ simpleTensorBenches1 (Proxy :: Proxy '(t,m,r)) (Proxy::Proxy (gen :: *)) = do
     bench "divg Pow"    $ nf divGPow x2',
     bench "divg Dec"    $ nf divGDec x2'',
     bench "divg CRT"    $ nf (fromJust' "SimpleTensorBenches./gcrt" divGCRT) x2,
-    bench "lift"        $ nf (fmapT lift) x2,
+    bench "lift"        $ nf (fmapT lift :: t m r -> t m (LiftOf r)) x2,
     bench "error"       $ nf (evalRand (fmapT (roundMult one) <$>
                            (tGaussianDec
                              (0.1 :: Double) :: Rand (CryptoRand gen) (t m Double)))

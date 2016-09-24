@@ -148,6 +148,8 @@ instance Tensor RT where
   entailShowT   = tag $ Sub Dict
   entailModuleT = tag $ Sub Dict
 
+  rep = return
+
   scalarPow = RT . scalarPow'
 
   l = wrap fL

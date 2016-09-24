@@ -144,6 +144,9 @@ type Matrix a = MathObj.Matrix.T a
 class FromIntegral a b where
   fromIntegral' :: a -> b
 
+instance FromIntegral Int64 Double where
+  fromIntegral' = fromIntegral
+
 -- 'IntegralDomain' instance for 'Double'
 instance Algebra.IntegralDomain.C Double where
     _ `div` 0 = error "cannot divide Double by 0\n"

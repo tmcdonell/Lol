@@ -4,15 +4,15 @@
 
 import Benchmarks hiding (benches, layers)
 import SimpleTensorBenches
-import TensorBenches
-import SimpleUCycBenches
-import UCycBenches
-import CycBenches
+--import TensorBenches
+--import SimpleUCycBenches
+--import UCycBenches
+--import CycBenches
 
 import Crypto.Lol
 import Crypto.Lol.Types
 import Crypto.Random.DRBG
---import Crypto.Lol.Cyclotomic.Tensor.Accelerate
+import Crypto.Lol.Cyclotomic.Tensor.Accelerate
 
 import Control.Applicative
 import Control.Monad (when, join)
@@ -24,11 +24,11 @@ import System.IO
 -- choose which layers of Lol to benchmark
 layers :: [String]
 layers = [
-  "STensor",
+  "STensor"
   --"Tensor",
   --"SUCyc",
   --"UCyc",
-  "Cyc"
+  --"Cyc"
   ]
 
 benches :: [String]
@@ -58,7 +58,7 @@ benches = [
   ]
 
 
-type T = CT
+type T = AT
 type M = F9*F5*F7*F11
 type R = Zq 34651
 type M' = F3*F5*F11
@@ -92,19 +92,19 @@ group2 (x:y:zs) = (x++y):(group2 zs)
 --oneIdxBenches p :: IO [Benchmark]
 {-# INLINE oneIdxBenches #-}
 oneIdxBenches ptmr pgen = sequence $ (($ pgen) . ($ ptmr)) <$> [
-  simpleTensorBenches1,
+  simpleTensorBenches1{-,
   tensorBenches1,
   simpleUCycBenches1,
   ucycBenches1,
-  cycBenches1
+  cycBenches1-}
   ]
 {-# INLINE twoIdxBenches #-}
 twoIdxBenches p = sequence $ ($ p) <$> [
-  simpleTensorBenches2,
+  simpleTensorBenches2{-,
   tensorBenches2,
   simpleUCycBenches2,
   ucycBenches2,
-  cycBenches2
+  cycBenches2-}
   ]
 
 {-

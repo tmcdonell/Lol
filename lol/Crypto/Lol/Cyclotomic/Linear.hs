@@ -70,14 +70,16 @@ instance Additive (Cyc t s z) => Additive.C (Linear t z e r s) where
 
   negate (RD as) = RD $ negate <$> as
 
-instance (Reduce z zq, Fact s, CElt t z, CElt t zq)
+instance (Reduce z zq, Reduce (TRep t z) (TRep t zq), Fact s, CElt t z, CElt t zq)
          => Reduce (Linear t z e r s) (Linear t zq e r s) where
   reduce (RD ys) = RD $ reduce <$> ys
 
 type instance LiftOf (Linear t zp e r s) = Linear t (LiftOf zp) e r s
 
 -- | lifts with respect to powerful basis, for best geometry
-instance (CElt t zp, CElt t z, z ~ LiftOf zp, Lift zp z, Fact s)
+instance (CElt t zp, CElt t z, (TRep t z) ~ (TRep t (LiftOf zp)),
+          Lift zp z, Lift (TRep t zp) (TRep t z), Fact s,
+          Reduce (TRep t z) (TRep t zp))
          => Lift' (Linear t zp e r s) where
   lift (RD ys) = RD $ liftPow <$> ys
 

@@ -108,11 +108,11 @@ bench_divgCRT = bench (fromJust' "TensorBenches.bench_divgCRT" divGCRT)
 -- generate a rounded error term
 bench_errRounded :: forall t m r gen . (ErrorCtx t m r gen)
   => Double -> Bench '(t,m,r,gen)
-bench_errRounded v = benchIO $ do
+bench_errRounded (v :: Double) = (benchIO $ do
   gen <- newGenIO
   return $ evalRand
     (fmapT (roundMult one) <$>
-      (tGaussianDec v :: Rand (CryptoRand gen) (t m Double)) :: Rand (CryptoRand gen) (t m (LiftOf r))) gen
+      (tGaussianDec v :: Rand (CryptoRand gen) (t m Double)) :: Rand (CryptoRand gen) (t m (LiftOf r))) gen) ::  Bench '(t,m,r,gen)
 
 bench_twacePow :: forall t m m' r . (TwoIdxCtx t m m' r)
   => t m' r -> Bench '(t,m,m',r)

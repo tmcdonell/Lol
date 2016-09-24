@@ -38,7 +38,7 @@
 module Crypto.Lol.Cyclotomic.Cyc
 (
 -- * Data type and constraints
-  Cyc, CElt, U.NFElt
+  Cyc, CElt, U.NFElt, TRep
 -- * Constructors/deconstructors
 , scalarCyc
 , cycPow, cycDec, cycCRT, cycCRTC, cycCRTE, cycPC, cycPE
@@ -342,7 +342,7 @@ divG (Sub c) = divG $ embed' c  -- must go to full ring
 -- | Sample from the "tweaked" Gaussian error distribution \(t\cdot D\) in
 -- the decoding basis, where \(D\) has scaled variance \(v\).
 tGaussian :: (Fact m, OrdFloat q, Random q, Tensor t, TElt t q,
-              ToRational v, MonadRandom rnd)
+              ToRational v, MonadRandom rnd, Transcendental (TRep t q))
              => v -> rnd (Cyc t m q)
 tGaussian = (Dec <$>) . U.tGaussian
 {-# INLINABLE tGaussian #-}
@@ -361,7 +361,10 @@ gSqNorm c = gSqNorm $ toDec' c
 -- implementation uses 'Double' precision to generate the Gaussian
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
-errorRounded :: (ToInteger z, Tensor t, Fact m, TElt t z,
+errorRounded :: (Tensor t, Fact m, TElt t z, Eq (TRep t z),
+                 Transcendental (TRep t Double), Ring (TRep t z),
+                 RealField (TRep t Double),
+                 FromIntegral (TRep t z) (TRep t Double),
                  ToRational v, MonadRandom rnd) => v -> rnd (Cyc t m z)
 {-# INLINABLE errorRounded #-}
 errorRounded = (Dec <$>) . U.errorRounded
@@ -373,8 +376,9 @@ errorRounded = (Dec <$>) . U.errorRounded
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
 errorCoset ::
-  (Mod zp, z ~ ModRep zp, Lift zp z, Fact m,
-   CElt t zp, ToRational v, MonadRandom rnd)
+  (Mod zp, z ~ ModRep zp, Lift zp z, Fact m, Transcendental (TRep t Double),
+   CElt t zp, ToRational v, MonadRandom rnd, Eq z, Ring z,
+   FromIntegral z v, FromIntegral z Double)
   => v -> Cyc t m zp -> rnd (Cyc t m z)
 errorCoset v = (Dec <$>) . U.errorCoset v . uncycDec
 {-# INLINABLE errorCoset #-}
@@ -435,7 +439,7 @@ powBasis = (Pow <$>) <$> U.powBasis
 {-# INLINABLE powBasis #-}
 
 -- | The relative mod-@r@ CRT set of the extension.
-crtSet :: (m `Divides` m', ZPP r, CElt t r, TElt t (ZpOf r))
+crtSet :: (m `Divides` m', ZPP r, ZPP (TRep t r), CElt t r, TElt t (ZpOf r))
           => Tagged m [Cyc t m' r]
 crtSet = (Pow <$>) <$> U.crtSet
 {-# INLINABLE crtSet #-}
@@ -443,7 +447,7 @@ crtSet = (Pow <$>) <$> U.crtSet
 
 ---------- Lattice operations and instances ----------
 
-instance (Reduce a b, Fact m, CElt t a, CElt t b)
+instance (Reduce a b, Reduce (TRep t a) (TRep t b), Fact m, CElt t a, CElt t b)
   -- CJP: need these specific constraints to get Reduce instance for Sub case
          => Reduce (Cyc t m a) (Cyc t m b) where
   {-# INLINABLE reduce #-}
@@ -456,14 +460,16 @@ instance (Reduce a b, Fact m, CElt t a, CElt t b)
 type instance LiftOf (Cyc t m r) = Cyc t m (LiftOf r)
 
 -- | Lift using the specified basis.
-liftCyc :: (Lift b a, Fact m, TElt t a, CElt t b)
+liftCyc :: (Lift b a, Lift (TRep t b) (TRep t a), Fact m, TElt t a, CElt t b)
            => R.Basis -> Cyc t m b -> Cyc t m a
 {-# INLINABLE liftCyc #-}
 
 liftCyc R.Pow = liftPow
 liftCyc R.Dec = liftDec
 
-liftPow, liftDec :: (Lift b a, Fact m, TElt t a, CElt t b)
+liftPow, liftDec :: --(Lift (TRep t b) a, Lift b a, Fact m, TElt t a, CElt t b)
+                    (Fact m, TElt t a, CElt t b,
+                     Lift b a, Lift (TRep t b) (TRep t a))
                     => Cyc t m b -> Cyc t m a
 {-# INLINABLE liftPow #-}
 {-# INLINABLE liftDec #-}
@@ -491,7 +497,7 @@ unzipCyc (CRT u) = either ((cycPE *** cycPE) . unzipCRTE)
 unzipCyc (Scalar c) = Scalar *** Scalar $ c
 unzipCyc (Sub c) = Sub *** Sub $ unzipCyc c
 
-instance {-# OVERLAPS #-} (Rescale a b, CElt t a, TElt t b)
+instance {-# OVERLAPS #-} (Rescale a b, Rescale (TRep t a) (TRep t b), CElt t a, TElt t b)
     => R.RescaleCyc (Cyc t) a b where
 
   -- Optimized for subring constructors, for powerful basis.
@@ -504,21 +510,30 @@ instance {-# OVERLAPS #-} (Rescale a b, CElt t a, TElt t b)
   rescaleCyc R.Dec c = Dec $ fmapDec rescale $ uncycDec c
   {-# INLINABLE rescaleCyc #-}
 
+-- liftCyc :: (Lift b a, Lift (TRep t b) (TRep t a), Fact m, TElt t a, CElt t b)
+
 -- | specialized instance for product rings of \(\Z_q\)s: ~2x faster
 -- algorithm
-instance (Mod a, Field b, Lift a (ModRep a), Reduce (LiftOf a) b,
-         CElt t (a,b), CElt t a, CElt t b, CElt t (LiftOf a))
+instance {-(Mod a, Field b, Lift a (ModRep a), Reduce (LiftOf a) b,
+         CElt t (a,b), CElt t a, CElt t b, CElt t (LiftOf a))-}
+         (Mod a, Field b,
+          CElt t (a,b), CElt t a, CElt t b,
+          Lift a (LiftOf a), Lift (TRep t a) (TRep t (LiftOf a)), -- liftCyc a
+          Reduce (ModRep a) b,                                    -- reduce aval
+          Reduce (TRep t (LiftOf a)) (TRep t b), CElt t (LiftOf a),                 -- reduce z
+          Lift a (ModRep a))                                      -- rescale c
          => R.RescaleCyc (Cyc t) (a,b) b where
-
   -- optimized for subrings and powerful basis (see comments in other
   -- instance for why this doesn't work for decoding basis)
   rescaleCyc R.Pow (Scalar c) = Scalar $ rescale c
   rescaleCyc R.Pow (Sub c) = Sub $ R.rescalePow c
 
-  rescaleCyc bas c = let aval = proxy modulus (Proxy::Proxy a)
-                         (a,b) = unzipCyc c
-                         z = liftCyc bas a
-                     in Scalar (recip (reduce aval)) * (b - reduce z)
+  rescaleCyc bas c=
+    let aval = proxy modulus (Proxy::Proxy a)
+        (a,b) = unzipCyc c
+        z = liftCyc bas a
+    in Scalar (recip (reduce aval)) * (b - reduce z)
+
   {-# INLINABLE rescaleCyc #-}
 
 -- | promoted from base ring
@@ -529,7 +544,9 @@ instance (Gadget gad zq, Fact m, CElt t zq) => Gadget gad (Cyc t m zq) where
   -- CJP: default 'encode' works because mul-by-Scalar is fast
 
 -- | promoted from base ring, using the powerful basis for best geometry
-instance (Decompose gad zq, Fact m, CElt t zq, CElt t (DecompOf zq))
+instance (Decompose gad zq, Decompose gad (TRep t zq), TRep t (DecompOf zq) ~ DecompOf (TRep t zq),
+          Fact m, CElt t zq, CElt t (DecompOf zq),
+          Reduce (DecompOf (Cyc t m zq)) (Cyc t m zq))
          => Decompose gad (Cyc t m zq) where
 
   type DecompOf (Cyc t m zq) = Cyc t m (DecompOf zq)

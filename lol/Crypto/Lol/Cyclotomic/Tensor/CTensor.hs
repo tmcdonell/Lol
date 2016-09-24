@@ -248,6 +248,8 @@ instance Tensor CT where
   entailShowT = tag $ Sub Dict
   entailModuleT = tag $ Sub Dict
 
+  rep = return
+
   scalarPow = CT . scalarPow' -- Vector code
 
   l = wrap $ basicDispatch dl
