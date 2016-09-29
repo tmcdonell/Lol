@@ -1,4 +1,4 @@
-{-# LANGUAGE ConstraintKinds, FlexibleContexts, MultiParamTypeClasses,
+{-# LANGUAGE ConstraintKinds, FlexibleContexts, GADTs, MultiParamTypeClasses,
              RebindableSyntax, ScopedTypeVariables #-}
 
 -- | \( \def\Z{\mathbb{Z}} \)
@@ -23,8 +23,10 @@ type Sample t m zq rrq = (Cyc t m zq, UCyc t m D rrq)
 
 -- | Common constraints for working with continuous RLWE.
 type RLWECtx t m zq rrq =
-  (Fact m, Ring zq, CElt t zq, Subgroup zq rrq, Lift' rrq,
-   TElt t rrq, TElt t (LiftOf rrq))
+  (Fact m, Ring zq, CElt t zq, Subgroup (TRep t zq) (TRep t rrq), Lift' (TRep t rrq),
+   Additive rrq, TElt t rrq, TElt t (LiftOf rrq), Transcendental (TRep t (LiftOf rrq)),
+   LiftOf (TRep t rrq) ~ TRep t (LiftOf rrq), Reduce (LiftOf rrq) rrq,
+   Reduce (TRep t (LiftOf rrq)) (TRep t rrq))
 
 -- | A continuous RLWE sample with the given scaled variance and secret.
 sample :: forall rnd v t m zq rrq .

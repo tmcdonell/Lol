@@ -87,5 +87,6 @@ Benchmark bench-lol
     base,
     DRBG,
     lol,
+    lol-accelerate,
     lol-benches,
     lol-utils

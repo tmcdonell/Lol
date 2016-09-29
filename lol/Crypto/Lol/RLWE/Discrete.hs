@@ -1,4 +1,4 @@
-{-# LANGUAGE ConstraintKinds, FlexibleContexts, MultiParamTypeClasses,
+{-# LANGUAGE ConstraintKinds, FlexibleContexts, GADTs, MultiParamTypeClasses,
              RebindableSyntax, ScopedTypeVariables #-}
 
 -- | Functions and types for working with discretized ring-LWE samples.
@@ -17,8 +17,10 @@ type Sample t m zq = (Cyc t m zq, Cyc t m zq)
 
 -- | Common constraints for working with discrete RLWE.
 type RLWECtx t m zq =
-  (Fact m, Ring zq, Lift' zq, ToInteger (LiftOf zq),
-   CElt t zq, CElt t (LiftOf zq))
+  (Fact m, Ring zq, Lift' (TRep t zq), ToInteger (LiftOf zq), Transcendental (TRep t Double),
+   CElt t zq, CElt t (LiftOf zq), Eq (TRep t (LiftOf zq)), RealField (TRep t Double),
+   LiftOf (TRep t zq) ~ TRep t (LiftOf zq), Reduce (TRep t (LiftOf zq)) (TRep t zq),
+   Reduce (LiftOf zq) zq, Lift' zq, FromIntegral (TRep t (LiftOf zq)) (TRep t Double))
 
 -- | A discrete RLWE sample with the given scaled variance and secret.
 sample :: forall rnd v t m zq .

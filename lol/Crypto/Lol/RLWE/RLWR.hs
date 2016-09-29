@@ -1,4 +1,4 @@
-{-# LANGUAGE ConstraintKinds, FlexibleContexts, MultiParamTypeClasses,
+{-# LANGUAGE ConstraintKinds, FlexibleContexts, GADTs, MultiParamTypeClasses,
              NoImplicitPrelude, ScopedTypeVariables #-}
 
 -- | Functions and types for working with ring-LWR samples.

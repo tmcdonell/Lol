@@ -84,6 +84,8 @@ library
     Crypto.Lol.Cyclotomic.RescaleCyc
     Crypto.Lol.Cyclotomic.Linear
 
+    Crypto.Lol.GaussRandom
+
     Crypto.Lol.RLWE.Continuous
     Crypto.Lol.RLWE.Discrete
     Crypto.Lol.RLWE.RLWR
@@ -92,11 +94,14 @@ library
     Crypto.Lol.Cyclotomic.Tensor.CTensor
     Crypto.Lol.Cyclotomic.Tensor.RepaTensor
 
-    Crypto.Lol.Types.Random
+    Crypto.Lol.Types.Complex
     Crypto.Lol.Types.FiniteField
     Crypto.Lol.Types.IrreducibleChar2
+    Crypto.Lol.Types.IZipVector
     Crypto.Lol.Types.Proto
+    Crypto.Lol.Types.Random
     Crypto.Lol.Types.RRq
+    Crypto.Lol.Types.ZmStar
     Crypto.Lol.Types.ZPP
     Crypto.Lol.Types.ZqBasic
 
@@ -111,11 +116,8 @@ library
     Crypto.Lol.PosBin
     Crypto.Lol.FactoredDefs
     Crypto.Lol.PosBinDefs
-    Crypto.Lol.GaussRandom
-    Crypto.Lol.Types.ZmStar
-    Crypto.Lol.Types.Complex
+
     Crypto.Lol.Types.Numeric
-    Crypto.Lol.Types.IZipVector
     Crypto.Lol.Cyclotomic.CRTSentinel
     Crypto.Lol.Cyclotomic.Tensor.RepaTensor.CRT
     Crypto.Lol.Cyclotomic.Tensor.RepaTensor.Extension

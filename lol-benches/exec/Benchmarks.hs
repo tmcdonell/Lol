@@ -17,6 +17,7 @@ import Crypto.Lol.Benchmarks.CycBenches
 import Crypto.Lol.Types
 import Crypto.Lol.Utils
 import Crypto.Lol.Utils.PrettyPrint hiding (benches, layers)
+import Crypto.Lol.Cyclotomic.Tensor.AT
 
 import Crypto.Random.DRBG
 
@@ -66,7 +67,7 @@ benches = [
 type M = F64*F9*F25 --F9*F5*F7*F11
 type R = Zq 1065601 --Zq 34651
 type M' = M -- F3*F5*F11
-type T = CT
+type T = AT
 
 instance Show (ArgType HashDRBG) where
   show _ = "HashDRBG"
