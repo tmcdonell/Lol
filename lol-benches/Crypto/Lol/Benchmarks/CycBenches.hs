@@ -7,17 +7,16 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module CycBenches (cycBenches1, cycBenches2) where
-
-import Benchmarks
+module Crypto.Lol.Benchmarks.CycBenches (cycBenches1, cycBenches2) where
 
 import Control.Applicative
 import Control.Monad.Random
 
 import Crypto.Lol
+import Crypto.Lol.Benchmarks
 import Crypto.Lol.Cyclotomic.Tensor (TElt)
 import Crypto.Lol.Types
-import Crypto.Random.DRBG
+import Crypto.Random
 
 {-# INLINABLE cycBenches1 #-}
 cycBenches1 :: (Monad rnd, _) => _ -> _ -> rnd Benchmark

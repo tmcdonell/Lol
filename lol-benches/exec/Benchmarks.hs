@@ -1,18 +1,24 @@
-{-# LANGUAGE BangPatterns, DataKinds, FlexibleContexts, GADTs, KindSignatures, NoImplicitPrelude, RebindableSyntax, ScopedTypeVariables, PolyKinds, RecordWildCards, TemplateHaskell, TypeOperators #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE TypeOperators         #-}
 
-{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-
-import Benchmarks hiding (benches, layers)
-import SimpleTensorBenches
---import TensorBenches
---import SimpleUCycBenches
---import UCycBenches
---import CycBenches
+{-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
 import Crypto.Lol
+import Crypto.Lol.Benchmarks
+--import Crypto.Lol.Benchmarks.SimpleTensorBenches
+import Crypto.Lol.Benchmarks.TensorBenches
+--import Crypto.Lol.Benchmarks.SimpleUCycBenches
+import Crypto.Lol.Benchmarks.UCycBenches
+import Crypto.Lol.Benchmarks.CycBenches
 import Crypto.Lol.Types
+import Crypto.Lol.Utils
+import Crypto.Lol.Utils.PrettyPrint hiding (benches, layers)
+
 import Crypto.Random.DRBG
-import Crypto.Lol.Cyclotomic.Tensor.Accelerate
 
 import Control.Applicative
 import Control.Monad (when, join)
@@ -24,11 +30,11 @@ import System.IO
 -- choose which layers of Lol to benchmark
 layers :: [String]
 layers = [
-  "STensor"
+  "STensor",
   "Tensor",
   "SUCyc",
   "UCyc",
-  --"Cyc"
+  "Cyc"
   ]
 
 benches :: [String]
@@ -57,11 +63,19 @@ benches = [
   "embedCRT"
   ]
 
-type T = AT
 type M = F64*F9*F25 --F9*F5*F7*F11
 type R = Zq 1065601 --Zq 34651
 type M' = M -- F3*F5*F11
-type Zq (q :: k) = ZqBasic q Int64
+type T = CT
+
+instance Show (ArgType HashDRBG) where
+  show _ = "HashDRBG"
+
+instance Show (ArgType RT) where
+  show _ = "RT"
+
+instance Show (ArgType CT) where
+  show _ = "CT"
 
 -- The random generator used in benchmarks
 type Gen = HashDRBG
@@ -91,17 +105,17 @@ group2 (x:y:zs) = (x++y):(group2 zs)
 --oneIdxBenches p :: IO [Benchmark]
 {-# INLINABLE oneIdxBenches #-}
 oneIdxBenches ptmr pgen = sequence $ (($ pgen) . ($ ptmr)) <$> [
-  simpleTensorBenches1{-,
+  --simpleTensorBenches1,
   tensorBenches1,
-  simpleUCycBenches1,
+  --simpleUCycBenches1,
   ucycBenches1,
-  cycBenches1-}
+  cycBenches1
   ]
 {-# INLINABLE twoIdxBenches #-}
 twoIdxBenches p = sequence $ ($ p) <$> [
-  simpleTensorBenches2{-,
+  --simpleTensorBenches2,
   tensorBenches2,
-  simpleUCycBenches2,
+  --simpleUCycBenches2,
   ucycBenches2,
-  cycBenches2-}
+  cycBenches2
   ]
