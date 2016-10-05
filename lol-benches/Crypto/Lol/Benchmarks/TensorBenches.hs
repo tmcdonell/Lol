@@ -21,7 +21,7 @@ import Crypto.Lol.Types
 import Crypto.Random
 
 {-# INLINABLE tensorBenches1 #-}
-tensorBenches1 :: (Monad rnd, _) => _ -> _ -> rnd Benchmark
+tensorBenches1 :: (MonadRandom rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
 tensorBenches1 ptmr pgen = benchGroup "Tensor" $ ($ ptmr) <$> [
   hideArgs "unzipPow" bench_unzip,
   hideArgs "unzipDec" bench_unzip,
@@ -42,7 +42,7 @@ tensorBenches1 ptmr pgen = benchGroup "Tensor" $ ($ ptmr) <$> [
   ]
 
 {-# INLINABLE tensorBenches2 #-}
-tensorBenches2 :: (Monad rnd, _) => _ -> rnd Benchmark
+tensorBenches2 :: (MonadRandom rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
 tensorBenches2 p = benchGroup "Tensor" $ ($ p) <$> [
   hideArgs "twacePow" bench_twacePow,
   hideArgs "twaceDec" bench_twacePow, -- yes, twacePow is correct here. It's the same function!
@@ -58,8 +58,8 @@ bench_unzip = bench unzipT
 
 {-# INLINABLE bench_mul #-}
 -- no CRT conversion, just coefficient-wise multiplication
-bench_mul :: _ => t m r -> t m r -> Bench '(t,m,r)
-bench_mul a = bench (zipWithT (*) a)
+bench_mul :: forall t m r . (Tensor t, _) => t m r -> t m r -> Bench '(t,m,r)
+bench_mul a = bench (zipWithT (*) a :: t m r -> t m r)
 
 {-# INLINABLE bench_crt #-}
 -- convert input from Pow basis to CRT basis
@@ -83,8 +83,8 @@ bench_lInv = bench lInv
 
 {-# INLINABLE bench_liftPow #-}
 -- lift an element in the Pow basis
-bench_liftPow :: _ => t m r -> Bench '(t,m,r)
-bench_liftPow = bench (fmapT lift)
+bench_liftPow :: forall t m r . (LiftOf (TRep t r) ~ TRep t (LiftOf r), _) => t m r -> Bench '(t,m,r)
+bench_liftPow = bench (fmapT lift :: t m r -> t m (LiftOf r))
 
 {-# INLINABLE bench_mulgPow #-}
 -- multiply by g when input is in Pow basis

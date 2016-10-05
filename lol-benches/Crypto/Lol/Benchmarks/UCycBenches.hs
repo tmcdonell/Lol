@@ -10,11 +10,9 @@
 module Crypto.Lol.Benchmarks.UCycBenches (ucycBenches1, ucycBenches2) where
 
 import Control.Applicative
-import Control.DeepSeq
 import Control.Monad.Random
 
 import Crypto.Lol.Benchmarks
-import Crypto.Lol.CRTrans
 import Crypto.Lol.Cyclotomic.Tensor (TElt)
 import Crypto.Lol.Cyclotomic.UCyc
 import Crypto.Lol.Prelude
@@ -22,7 +20,7 @@ import Crypto.Lol.Types
 import Crypto.Random
 
 {-# INLINABLE ucycBenches1 #-}
-ucycBenches1 :: (Monad rnd, _) => _ -> _ -> rnd Benchmark
+ucycBenches1 :: (MonadRandom rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
 ucycBenches1 ptmr pgen = benchGroup "UCyc" $ ($ ptmr) <$> [
   hideArgs "unzipPow" bench_unzipUCycPow,
   hideArgs "unzipDec" bench_unzipUCycDec,
@@ -43,7 +41,7 @@ ucycBenches1 ptmr pgen = benchGroup "UCyc" $ ($ ptmr) <$> [
   ]
 
 {-# INLINE ucycBenches2 #-}
-ucycBenches2 :: (Monad rnd, _) => _ -> rnd Benchmark
+ucycBenches2 :: (MonadRandom rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
 ucycBenches2 p = benchGroup "UCyc" $ ($ p) <$> [
   hideArgs "twacePow" bench_twacePow,
   hideArgs "twaceDec" bench_twaceDec,

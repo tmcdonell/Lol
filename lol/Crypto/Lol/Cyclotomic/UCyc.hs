@@ -114,8 +114,7 @@ data UCyc t (m :: Factored) rep r where
 type UCRTElt t r = (Tensor t, CRTEmbed (TRep t r), CRTEmbed r,
                     CRTrans Maybe (TRep t r), TElt t r,
                     CRTrans Identity (CRTExt (TRep t r)), TElt t (CRTExt r),
-                    CRTExt (TRep t r) ~ TRep t (CRTExt r),
-                    ZpOf (TRep t r) ~ TRep t (ZpOf r))
+                    CRTExt (TRep t r) ~ TRep t (CRTExt r))
 
 -- | Convenient synonym for 'deepseq'-able element type.
 type NFElt r = (NFData r, NFData (CRTExt r))
@@ -540,7 +539,7 @@ crtSet :: forall t m m' r p mbar m'bar .
            (m `Divides` m', ZPP r,
             ZPP (TRep t r), p ~ CharOf (ZpOf r),
             mbar ~ PFree p m, m'bar ~ PFree p m',
-            UCRTElt t r, TElt t (ZpOf r))
+            UCRTElt t r, TElt t (ZpOf r), TRep t (ZpOf r) ~ ZpOf (TRep t r))
            => Tagged m [UCyc t m' P r]
 {-# INLINABLE crtSet #-}
 crtSet =

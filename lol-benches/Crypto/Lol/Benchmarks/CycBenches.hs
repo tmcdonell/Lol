@@ -19,7 +19,7 @@ import Crypto.Lol.Types
 import Crypto.Random
 
 {-# INLINABLE cycBenches1 #-}
-cycBenches1 :: (Monad rnd, _) => _ -> _ -> rnd Benchmark
+cycBenches1 :: (MonadRandom rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
 cycBenches1 ptmr pgen = benchGroup "Cyc" $ ($ ptmr) <$> [
   hideArgs "unzipPow" bench_unzipCycPow,
   hideArgs "unzipDec" bench_unzipCycDec,
@@ -40,7 +40,7 @@ cycBenches1 ptmr pgen = benchGroup "Cyc" $ ($ ptmr) <$> [
   ]
 
 {-# INLINABLE cycBenches2 #-}
-cycBenches2 :: (Monad rnd, _) => _ -> rnd Benchmark
+cycBenches2 :: (MonadRandom rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
 cycBenches2 p = benchGroup "Cyc" $ ($ p) <$> [
   hideArgs "twacePow" bench_twacePow,
   hideArgs "twaceDec" bench_twaceDec,

@@ -7,8 +7,9 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+import Criterion
+
 import Crypto.Lol
-import Crypto.Lol.Benchmarks
 --import Crypto.Lol.Benchmarks.SimpleTensorBenches
 import Crypto.Lol.Benchmarks.TensorBenches
 --import Crypto.Lol.Benchmarks.SimpleUCycBenches
@@ -17,12 +18,12 @@ import Crypto.Lol.Benchmarks.CycBenches
 import Crypto.Lol.Types
 import Crypto.Lol.Utils
 import Crypto.Lol.Utils.PrettyPrint hiding (benches, layers)
-import Crypto.Lol.Cyclotomic.Tensor.AT
+import Crypto.Lol.Cyclotomic.Tensor.Accelerate
 
 import Crypto.Random.DRBG
 
-import Control.Applicative
 import Control.Monad (when, join)
+import Control.Monad.Random
 
 import Data.List (transpose)
 
@@ -78,8 +79,12 @@ instance Show (ArgType RT) where
 instance Show (ArgType CT) where
   show _ = "CT"
 
+instance Show (ArgType AT) where
+  show _ = "AT"
+
 -- The random generator used in benchmarks
 type Gen = HashDRBG
+
 
 testParam :: Proxy '(T, M, R)
 testParam = Proxy
@@ -93,8 +98,8 @@ main = do
   let opts = defaultWidthOpts Progress layers benches
   reports <- join $ mapM (getReports opts) <$>
     concat <$> transpose <$>
-      sequence [oneIdxBenches testParam (Proxy::Proxy Gen),
-                twoIdxBenches twoIdxParam]
+      sequence [oneIdxBenches testParam (Proxy::Proxy Gen)] --,
+                --twoIdxBenches twoIdxParam]
 
   when (verb opts == Progress) $ putStrLn ""
   printTable opts $ group2 $ map reverse reports
@@ -105,6 +110,7 @@ group2 (x:y:zs) = (x++y):(group2 zs)
 
 --oneIdxBenches p :: IO [Benchmark]
 {-# INLINABLE oneIdxBenches #-}
+oneIdxBenches :: _ => _ -> _ -> rnd [Benchmark]
 oneIdxBenches ptmr pgen = sequence $ (($ pgen) . ($ ptmr)) <$> [
   --simpleTensorBenches1,
   tensorBenches1,
@@ -112,7 +118,9 @@ oneIdxBenches ptmr pgen = sequence $ (($ pgen) . ($ ptmr)) <$> [
   ucycBenches1,
   cycBenches1
   ]
+
 {-# INLINABLE twoIdxBenches #-}
+twoIdxBenches :: (MonadRandom m, _) => _ -> m [Benchmark]
 twoIdxBenches p = sequence $ ($ p) <$> [
   --simpleTensorBenches2,
   tensorBenches2,
