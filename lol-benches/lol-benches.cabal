@@ -55,6 +55,8 @@ library
   exposed-modules:
     Crypto.Lol.Benchmarks
     Crypto.Lol.Benchmarks.CycBenches
+    Crypto.Lol.Benchmarks.SimpleTensorBenches
+    Crypto.Lol.Benchmarks.SimpleUCycBenches
     Crypto.Lol.Benchmarks.TensorBenches
     Crypto.Lol.Benchmarks.UCycBenches
     Crypto.Lol.Utils.PrettyPrint
@@ -66,6 +68,7 @@ library
     criterion,
     crypto-api,
     deepseq,
+    DRBG,
     lol,
     lol-utils,
     MonadRandom,
@@ -85,8 +88,10 @@ Benchmark bench-lol
 
   build-depends:
     base,
+    criterion,
     DRBG,
     lol,
     lol-accelerate,
     lol-benches,
-    lol-utils
+    lol-utils,
+    MonadRandom

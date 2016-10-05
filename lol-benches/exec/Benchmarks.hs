@@ -10,9 +10,9 @@
 import Criterion
 
 import Crypto.Lol
---import Crypto.Lol.Benchmarks.SimpleTensorBenches
+import Crypto.Lol.Benchmarks.SimpleTensorBenches
 import Crypto.Lol.Benchmarks.TensorBenches
---import Crypto.Lol.Benchmarks.SimpleUCycBenches
+import Crypto.Lol.Benchmarks.SimpleUCycBenches
 import Crypto.Lol.Benchmarks.UCycBenches
 import Crypto.Lol.Benchmarks.CycBenches
 import Crypto.Lol.Types
@@ -98,8 +98,8 @@ main = do
   let opts = defaultWidthOpts Progress layers benches
   reports <- join $ mapM (getReports opts) <$>
     concat <$> transpose <$>
-      sequence [oneIdxBenches testParam (Proxy::Proxy Gen)] --,
-                --twoIdxBenches twoIdxParam]
+      sequence [oneIdxBenches testParam (Proxy::Proxy Gen),
+                twoIdxBenches twoIdxParam]
 
   when (verb opts == Progress) $ putStrLn ""
   printTable opts $ group2 $ map reverse reports
@@ -110,21 +110,21 @@ group2 (x:y:zs) = (x++y):(group2 zs)
 
 --oneIdxBenches p :: IO [Benchmark]
 {-# INLINABLE oneIdxBenches #-}
-oneIdxBenches :: _ => _ -> _ -> rnd [Benchmark]
+oneIdxBenches :: _ => _ -> _ -> IO [Benchmark]
 oneIdxBenches ptmr pgen = sequence $ (($ pgen) . ($ ptmr)) <$> [
-  --simpleTensorBenches1,
+  simpleTensorBenches1,
   tensorBenches1,
-  --simpleUCycBenches1,
+  simpleUCycBenches1,
   ucycBenches1,
   cycBenches1
   ]
 
 {-# INLINABLE twoIdxBenches #-}
-twoIdxBenches :: (MonadRandom m, _) => _ -> m [Benchmark]
+twoIdxBenches :: _ => _ -> IO [Benchmark]
 twoIdxBenches p = sequence $ ($ p) <$> [
-  --simpleTensorBenches2,
+  simpleTensorBenches2,
   tensorBenches2,
-  --simpleUCycBenches2,
+  simpleUCycBenches2,
   ucycBenches2,
   cycBenches2
   ]

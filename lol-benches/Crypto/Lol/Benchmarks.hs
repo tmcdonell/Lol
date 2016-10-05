@@ -45,10 +45,9 @@ benchGroup str = (bgroup str <$>) . sequence
 
 -- normalizes any function resulting in a Benchmark to
 -- one that takes a proxy for its arguments
-hideArgs :: (Monad rnd, ShowType a, ResultOf bnch ~ Bench a) --GenArgs rnd bnch,
-
+hideArgs :: (Monad rnd, ShowType a, ResultOf bnch ~ Bench a, GenArgs rnd bnch)
   => String -> bnch -> Proxy a -> rnd Benchmark
-hideArgs s f p = undefined -- (C.bench (s ++ "/" ++ showType p) . unbench) <$> genArgs f
+hideArgs s f p = (C.bench (s ++ "/" ++ showType p) . unbench) <$> genArgs f
 
 newtype Bench params = Bench {unbench :: Benchmarkable}
 
