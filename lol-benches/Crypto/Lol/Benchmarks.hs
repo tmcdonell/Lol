@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -7,50 +8,63 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 
+-- | Infrastructure for benchmarking Lol.
+
 module Crypto.Lol.Benchmarks
 (Crypto.Lol.Benchmarks.bench
+,benchM
 ,benchIO
 ,benchGroup
-,hideArgs
-,Bench(..)
+,genBenchArgs
+,Bench
 ,Benchmark
 ,NFData
 ,addGen) where
 
-import Criterion as C
-
 import Control.DeepSeq
-
+import Control.Monad.Random
+import Criterion as C
+import Crypto.Lol.Utils.GenArgs
 import Data.Proxy
 
-import Crypto.Lol.Utils.GenArgs
-import Crypto.Lol.Utils
-
+-- | Convenience function for benchmarks with an extra parameter.
 addGen :: Proxy gen -> Proxy '(t,m,r) -> Proxy '(t,m,r,gen)
 addGen _ _ = Proxy
 
+-- | Wrapper for criterion's 'nf'
 {-# INLINABLE bench #-}
--- wrapper for Criterion's `nf`
 bench :: NFData b => (a -> b) -> a -> Bench params
 bench f = Bench . nf f
 
--- wrapper for Criterion's `nfIO`
+-- | Use when you need randomness /outside/ the benchmark.
+benchM :: (forall m . (MonadRandom m) => m (Bench a)) -> Bench a
+benchM = BenchM
+
+-- | Wrapper for criterion's 'nfIO'. Use when there is randomness /inside/ the
+-- benchmark.
 benchIO :: NFData b => IO b -> Bench params
 benchIO = Bench . nfIO
 
 {-# INLINABLE benchGroup #-}
--- wrapper for Criterion's
+-- | Wrapper for criterion's 'bgroup'
 benchGroup :: (Monad rnd) => String -> [rnd Benchmark] -> rnd Benchmark
 benchGroup str = (bgroup str <$>) . sequence
 
--- normalizes any function resulting in a Benchmark to
--- one that takes a proxy for its arguments
-hideArgs :: (Monad rnd, ShowType a, ResultOf bnch ~ Bench a, GenArgs rnd bnch)
+-- | Converts a function mapping zero or more arguments to a 'Bench' @a@
+-- by generating random inputs to the function
+genBenchArgs :: (GenArgs bnch, ResultOf bnch ~ Bench a, MonadRandom rnd)
   => String -> bnch -> Proxy a -> rnd Benchmark
-hideArgs s f p = (C.bench (s ++ "/" ++ showType p) . unbench) <$> genArgs f
+genBenchArgs s f _ = (C.bench s . unbench) <$> genArgs f
 
-newtype Bench params = Bench {unbench :: Benchmarkable}
+unbench :: Bench a -> Benchmarkable
+unbench (Bench x) = x
+unbench (BenchM _) = error "cannot unbench BenchM"
 
-instance (Monad rnd) => GenArgs rnd (Bench params) where
-  type ResultOf (Bench params) = Bench params
-  genArgs = return
+-- | Wrapper around criterion's 'Benchmarkable', with phantom parameters.
+data Bench params where
+  Bench :: Benchmarkable -> Bench a
+  BenchM :: (forall m . (MonadRandom m) => m (Bench a)) -> Bench a
+
+instance GenArgs (Bench params) where
+  genArgs x@(Bench _) = return x
+  genArgs (BenchM x) = x

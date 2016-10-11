@@ -1,5 +1,10 @@
-{-# LANGUAGE DataKinds, FlexibleContexts, FlexibleInstances, MultiParamTypeClasses,
-             NoImplicitPrelude, RankNTypes, TypeFamilies #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NoImplicitPrelude     #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module Crypto.Lol.Benchmarks.ZqBenches (zqBenches) where
 
@@ -17,6 +22,7 @@ import Benchmarks
 
 type Arr = R.Array R.U R.DIM1
 
+-- | Benchmarks for 'ZqBasic'
 zqBenches :: IO Benchmark
 zqBenches = benchGroup "ZqBasic" [
   hideArgs bench_mul_unb (Proxy::Proxy (Zq 577)),

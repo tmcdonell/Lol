@@ -1,11 +1,14 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE NoImplicitPrelude    #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeFamilies         #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
+-- | Benchmarks for the 'UCyc' interface. These benchmarks do not use the
+-- benchmark harness, so they may perform differently than UCycBenches.hs.
 
 module Crypto.Lol.Benchmarks.SimpleUCycBenches (simpleUCycBenches1, simpleUCycBenches2) where
 
@@ -15,13 +18,15 @@ import Control.Monad.Random
 import Crypto.Lol.Prelude
 import Crypto.Lol.Cyclotomic.UCyc
 import Crypto.Lol.Types
-import Crypto.Random.DRBG
+import Crypto.Random
 
 import Criterion
 
+-- | Benchmarks for single-index operations. There must be a CRT basis for \(O_m\) over @r@.
 {-# INLINE simpleUCycBenches1 #-}
-simpleUCycBenches1 :: _ => _ -> _ -> IO Benchmark
-simpleUCycBenches1 (Proxy :: Proxy '(t,m,r)) (Proxy::Proxy (gen :: *)) = do
+simpleUCycBenches1 :: forall t m r (gen :: *) . _
+  => Proxy '(t,m,r) -> Proxy gen -> IO Benchmark
+simpleUCycBenches1 _ _ = do
   x1 :: UCyc t m P (r, r) <- getRandom
   let x1' = toDec x1
   (Right x2) :: UCycPC t m (r, r) <- getRandom
@@ -51,22 +56,23 @@ simpleUCycBenches1 (Proxy :: Proxy '(t,m,r)) (Proxy::Proxy (gen :: *)) = do
     bench "error"       $ nf (evalRand (errorRounded (0.1 :: Double) :: Rand (CryptoRand gen) (UCyc t m D Int64))) gen
     ]
 
+-- | Benchmarks for inter-ring operations. There must be a CRT basis for \(O_{m'}\) over @r@.
 {-# INLINE simpleUCycBenches2 #-}
-simpleUCycBenches2 :: _ => _ -> IO Benchmark
-simpleUCycBenches2 (Proxy :: Proxy '(t,m',m,r)) = do
-  x4 :: UCyc t m P r <- getRandom
+simpleUCycBenches2 :: forall t m m' r . _ => Proxy '(t,m,m',r) -> IO Benchmark
+simpleUCycBenches2 _ = do
+  x4 :: UCyc t m' P r <- getRandom
   let x5 = toDec x4
-  (Right x6) :: UCycPC t m r <- getRandom
-  x7 :: UCyc t m' P r <- getRandom
+  (Right x6) :: UCycPC t m' r <- getRandom
+  x7 :: UCyc t m P r <- getRandom
   let x8 = toDec x7
-  (Right x9) :: UCycPC t m' r <- getRandom
+  (Right x9) :: UCycPC t m r <- getRandom
   return $ bgroup "SUCyc" [
-    bench "twacePow" $ nf (twacePow :: UCyc t m P r -> UCyc t m' P r) x4,
-    bench "twaceDec" $ nf (twaceDec :: UCyc t m D r -> UCyc t m' D r) x5,
-    bench "twaceCRT" $ nf (twaceCRTC :: UCyc t m C r -> UCycPC t m' r) x6,
-    bench "embedPow" $ nf (embedPow :: UCyc t m' P r -> UCyc t m P r) x7,
-    bench "embedDec" $ nf (embedDec :: UCyc t m' D r -> UCyc t m D r) x8,
-    bench "embedCRT" $ nf (embedCRTC :: UCyc t m' C r -> UCycPC t m r) x9
+    bench "twacePow" $ nf (twacePow :: UCyc t m' P r -> UCyc t m P r) x4,
+    bench "twaceDec" $ nf (twaceDec :: UCyc t m' D r -> UCyc t m D r) x5,
+    bench "twaceCRT" $ nf (twaceCRTC :: UCyc t m' C r -> UCycPC t m r) x6,
+    bench "embedPow" $ nf (embedPow :: UCyc t m P r -> UCyc t m' P r) x7,
+    bench "embedDec" $ nf (embedDec :: UCyc t m D r -> UCyc t m' D r) x8,
+    bench "embedCRT" $ nf (embedCRTC :: UCyc t m C r -> UCycPC t m' r) x9
     ]
 
 pcToEC :: UCycPC t m r -> UCycEC t m r

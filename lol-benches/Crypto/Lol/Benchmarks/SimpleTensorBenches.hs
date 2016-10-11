@@ -1,13 +1,14 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE NoImplicitPrelude    #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
+
+-- | Benchmarks for the 'Tensor' interface. These benchmarks do not use the
+-- benchmark harness, so they may perform differently than TensorBenches.hs.
 
 module Crypto.Lol.Benchmarks.SimpleTensorBenches (simpleTensorBenches1, simpleTensorBenches2) where
 
@@ -21,9 +22,11 @@ import Crypto.Lol.Cyclotomic.Tensor
 import Crypto.Lol.Types (CryptoRand)
 import Crypto.Random
 
-{-# INLINE simpleTensorBenches1 #-}
-simpleTensorBenches1 :: _ => _ -> _ -> IO Benchmark
-simpleTensorBenches1 (Proxy :: Proxy '(t,m,r)) (Proxy::Proxy (gen :: *)) = do
+-- | Benchmarks for single-index operations. There must be a CRT basis for \(O_m\) over @r@.
+{-# INLINABLE simpleTensorBenches1 #-}
+simpleTensorBenches1 :: forall t m r (gen :: *) . _
+  => Proxy '(t,m,r) -> Proxy gen -> IO Benchmark
+simpleTensorBenches1 _ _ = do
   x1 :: t m (r, r) <- getRandom
   x2 :: t m r <- getRandom
   x3 :: t m r <- getRandom
@@ -52,9 +55,10 @@ simpleTensorBenches1 (Proxy :: Proxy '(t,m,r)) (Proxy::Proxy (gen :: *)) = do
                                :: CryptoRand gen -> t m Int64) gen
     ]
 
-{-# INLINE simpleTensorBenches2 #-}
-simpleTensorBenches2 :: _ => _ -> IO Benchmark
-simpleTensorBenches2 (Proxy :: Proxy '(t,m',m,r)) = do
+-- | Benchmarks for inter-ring operations. There must be a CRT basis for \(O_{m'}\) over @r@.
+{-# INLINABLE simpleTensorBenches2 #-}
+simpleTensorBenches2 :: forall t m m' r . _ => Proxy '(t,m',m,r) -> IO Benchmark
+simpleTensorBenches2 _ = do
   x2 :: t m r <- getRandom
   x4 :: t m' r <- getRandom
   return $ bgroup "STensor" [
