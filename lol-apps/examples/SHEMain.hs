@@ -52,7 +52,7 @@ type SKRing = Cyc T CTIndex (LiftOf PTZq)
 main :: IO ()
 main = do
   plaintext <- getRandom
-  sk :: SK SKRing <- genSK (1 :: Double)
+  sk :: SK Double SKRing <- genSK 1
   -- encrypt with a single modulus
   ciphertext :: CTRing1 <- encrypt sk plaintext
 
