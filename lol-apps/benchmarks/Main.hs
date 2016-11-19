@@ -6,6 +6,7 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
@@ -115,6 +116,6 @@ homomprfBenches pt pgad = benchGroup "HomomPRF"
 
 -- EAC: is there a simple way to parameterize the variance?
 -- generates a secret key with scaled variance 1.0
-instance (GenSKCtx t m' z Double) => Random (SK (Cyc t m' z)) where
+instance (GenSKCtx t m' z) => Random (SK Double (Cyc t m' z)) where
   random = runRand $ genSK (1 :: Double)
   randomR = error "randomR not defined for SK"

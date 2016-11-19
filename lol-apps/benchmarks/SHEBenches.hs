@@ -66,45 +66,45 @@ tunnelBenches _ _ _ =
 
 
 bench_enc :: forall t m m' z zp (zq :: *) (gen :: *) . (z ~ LiftOf zp,  _)
-  => SK (Cyc t m' z) -> PT (Cyc t m zp) -> Bench '(t,m,m',zp,zq,gen)
+  => SK Double (Cyc t m' z) -> PT (Cyc t m zp) -> Bench '(t,m,m',zp,zq,gen)
 bench_enc sk pt = benchIO $ do
   gen <- newGenIO
   return $ evalRand (encrypt sk pt :: Rand (CryptoRand gen) (CT m zp (Cyc t m' zq))) gen
 
 -- requires zq to be Liftable
 bench_dec :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
-  => PT (Cyc t m zp) -> SK (Cyc t m' z) -> Bench '(t,m,m',zp,zq)
+  => PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Bench '(t,m,m',zp,zq)
 bench_dec pt sk = benchM $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
   return $ bench (decrypt sk) ct
 
 bench_mul :: forall t m m' z zp zq . (z ~ LiftOf zp, LiftOf zp ~ ModRep zp, _)
-  => PT (Cyc t m zp) -> PT (Cyc t m zp) -> SK (Cyc t m' z) -> (Bench '(t,m,m',zp,zq))
+  => PT (Cyc t m zp) -> PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> (Bench '(t,m,m',zp,zq))
 bench_mul pta ptb sk = benchM $ do
   a :: CT m zp (Cyc t m' zq) <- encrypt sk pta
   b <- encrypt sk ptb
   return $ bench (*a) b
 
 bench_addPublic :: forall t m m' z zp zq . (z ~ LiftOf zq, _)
-  => Cyc t m zp -> PT (Cyc t m zp) -> SK (Cyc t m' z) -> Bench '(t,m,m',zp,zq)
+  => Cyc t m zp -> PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Bench '(t,m,m',zp,zq)
 bench_addPublic a pt sk = benchM $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
   return $ bench (addPublic a) ct
 
 bench_mulPublic :: forall t m m' z zp zq . (z ~ LiftOf zq, _)
-  => Cyc t m zp -> PT (Cyc t m zp) -> SK (Cyc t m' z) -> Bench '(t,m,m',zp,zq)
+  => Cyc t m zp -> PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Bench '(t,m,m',zp,zq)
 bench_mulPublic a pt sk = benchM $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
   return $ bench (mulPublic a) ct
 
 bench_rescaleCT :: forall t m m' z zp (zq :: *) (zq' :: *) . (z ~ LiftOf zq, _)
-  => PT (Cyc t m zp) -> SK (Cyc t m' z) -> Bench '(t,m,m',zp,zq,zq')
+  => PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Bench '(t,m,m',zp,zq,zq')
 bench_rescaleCT pt sk = benchM $ do
   ct <- encrypt sk pt
   return $ bench (rescaleLinearCT :: CT m zp (Cyc t m' zq') -> CT m zp (Cyc t m' zq)) ct
 
 bench_keySwQ :: forall t m m' z zp zq (zq' :: *) (gad :: *) . (z ~ LiftOf zp, _)
-  => PT (Cyc t m zp) -> SK (Cyc t m' z) -> Bench '(t,m,m',zp,zq,zq',gad)
+  => PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Bench '(t,m,m',zp,zq,zq',gad)
 bench_keySwQ pt sk = benchM $ do
   x :: CT m zp (Cyc t m' zq) <- encrypt sk pt
   kswq <- proxyT (keySwitchQuadCirc sk) (Proxy::Proxy (gad,zq'))
@@ -122,8 +122,9 @@ bench_tunnel :: forall t e e' r r' s s' z zp zq gad .
    r `Divides` r',
    Fact e,
    NFData zp,
-   CElt t (ZpOf zp))
-  => PT (Cyc t r zp) -> SK (Cyc t r' z) -> SK (Cyc t s' z) -> Bench '(t,r,r',s,s',zp,zq,gad)
+   CElt t (ZpOf zp), FromIntegral z Double,
+   ZPP (TRep t zp), TRep t (ZpOf zp) ~ ZpOf (TRep t zp))
+  => PT (Cyc t r zp) -> SK Double (Cyc t r' z) -> SK Double (Cyc t s' z) -> Bench '(t,r,r',s,s',zp,zq,gad)
 bench_tunnel pt skin skout = benchM $ do
   x :: CT r zp (Cyc t r' zq) <- encrypt skin pt
   let crts :: [Cyc t s zp] = proxy crtSet (Proxy::Proxy e) \\ gcdDivides (Proxy::Proxy r) (Proxy::Proxy s)
