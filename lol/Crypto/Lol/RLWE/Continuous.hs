@@ -1,5 +1,9 @@
-{-# LANGUAGE ConstraintKinds, FlexibleContexts, GADTs, MultiParamTypeClasses,
-             RebindableSyntax, ScopedTypeVariables #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RebindableSyntax      #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 -- | \( \def\Z{\mathbb{Z}} \)
 --   \( \def\R{\mathbb{R}} \)

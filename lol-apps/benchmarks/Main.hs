@@ -3,6 +3,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE PolyKinds             #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 
@@ -13,6 +14,7 @@ import Control.Monad.Random
 import Crypto.Lol (Cyc)
 import Crypto.Lol.Applications.SymmSHE hiding (CT)
 import Crypto.Lol.Benchmarks
+import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Factored
 import Crypto.Lol.Gadget
 import Crypto.Lol.Utils.PrettyPrint.Table
@@ -22,7 +24,11 @@ import Crypto.Random.DRBG
 import Data.Int
 import Data.Proxy
 
+import HomomPRFBenches
+import HomomPRFParams hiding (type Zq)
+import KHPRFBenches
 import SHEBenches
+import Crypto.Lol.Applications.KeyHomomorphicPRF
 
 infixr 9 **
 data a ** b
@@ -45,11 +51,14 @@ bs = [
 main :: IO ()
 main = do
   let o = (defaultOpts "SHE"){benches=bs}
-  benchGroups <- defaultBenches (Proxy::Proxy CT) (Proxy::Proxy TrivGad) (Proxy::Proxy HashDRBG)
-  mapM_ (prettyBenches o) benchGroups
+      pct = Proxy::Proxy CT
+  sheBs <- sheBenches' pct (Proxy::Proxy TrivGad) (Proxy::Proxy HashDRBG)
+  khprfBs <- khprfBenches pct (Proxy::Proxy PRFGad)
+  homomprfBs <- homomprfBenches pct (Proxy::Proxy PRFGad)
+  mapM_ (prettyBenches o) [sheBs, khprfBs, homomprfBs]
 
-defaultBenches :: _ => Proxy t -> Proxy gad -> Proxy gen -> rnd [Benchmark]
-defaultBenches pt pgad pgen  = sequence [
+sheBenches' :: _ => Proxy t -> Proxy gad -> Proxy gen -> rnd Benchmark
+sheBenches' pt pgad pgen  = benchGroup "SHE" [
   benchGroup "SHE" $ ($ pt) <$>
     [sheBenches (Proxy::Proxy '(F16, F1024, Zq 8,  Zq 1017857)) pgen,
      sheBenches (Proxy::Proxy '(F16, F2048, Zq 16, Zq 1017857)) pgen],
@@ -89,6 +98,20 @@ defaultBenches pt pgad pgen  = sequence [
                                                   F9 * F5 * F7 * F13,
                                                   Zq PP32,
                                                   Zq 3144961)) pgad]]
+
+
+khprfBenches :: forall t gad rnd . (_) => Proxy t -> Proxy gad -> rnd Benchmark
+khprfBenches pt _ = benchGroup "KHPRF"
+  [benchGroup "left"     $ benches' leftSpineTree,
+   benchGroup "balanced" $ benches' balancedTree,
+   benchGroup "right"    $ benches' rightSpineTree]
+  where
+    benches' = khPRFBenches 5 pt (Proxy::Proxy F128) (Proxy::Proxy '(Zq 8, Zq 2, gad))
+
+homomprfBenches :: _ => Proxy t -> Proxy prfgad -> rnd Benchmark
+homomprfBenches pt pgad = benchGroup "HomomPRF"
+  [benchGroup "balanced-startup"   [benchHomomPRF 5 balancedTree [0] pt pgad],
+   benchGroup "balanced-amortized" [benchHomomPRF 5 balancedTree (grayCode 5) pt pgad]]
 
 -- EAC: is there a simple way to parameterize the variance?
 -- generates a secret key with scaled variance 1.0

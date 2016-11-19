@@ -1,7 +1,14 @@
-{-# LANGUAGE ConstraintKinds, DataKinds, FlexibleContexts,
-             FlexibleInstances, GADTs, MultiParamTypeClasses,
-             NoImplicitPrelude, ScopedTypeVariables, TypeFamilies,
-             TypeOperators, UndecidableInstances #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NoImplicitPrelude     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 -- | Symmetric-key somewhat homomorphic encryption.  See Section 4 of
 -- http://eprint.iacr.org/2015/1134 for mathematical description.
@@ -11,7 +18,7 @@ module Crypto.Lol.Applications.SymmSHE
 -- * Data types
 SK, PT, CT -- don't export constructors!
 -- * Keygen, encryption, decryption
-, genSK
+, genSK, genSKWithVar
 , encrypt
 , errorTerm, errorTermUnrestricted, decrypt, decryptUnrestricted
 -- * Arithmetic with public values
@@ -85,8 +92,14 @@ type GenSKCtx t m z v =
 -- | Generates a secret key with (index-independent) scaled variance
 -- parameter \( v \); see 'errorRounded'.
 genSK :: (GenSKCtx t m z v, MonadRandom rnd)
-         => v -> rnd (SK (Cyc t m z))
+      => v -> rnd (SK (Cyc t m z))
 genSK v = liftM (SK v) $ errorRounded v
+
+-- | Generates a secret key with the same scaled variance
+-- as the input secret key.
+genSKWithVar :: (ToInteger z, Fact m, CElt t z, MonadRandom rnd)
+             => SK a -> rnd (SK (Cyc t m z))
+genSKWithVar (SK v _) = genSK v
 
 -- | Constraint synonym for encryption.
 type EncryptCtx t m m' z zp zq =
