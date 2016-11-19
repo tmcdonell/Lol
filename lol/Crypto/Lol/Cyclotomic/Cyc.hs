@@ -437,7 +437,8 @@ powBasis = (Pow <$>) <$> U.powBasis
 {-# INLINABLE powBasis #-}
 
 -- | The relative mod-@r@ CRT set of the extension.
-crtSet :: (m `Divides` m', ZPP r, ZPP (TRep t r), CElt t r, TElt t (ZpOf r), TRep t (ZpOf r) ~ ZpOf (TRep t r))
+crtSet :: (m `Divides` m', ZPP r, ZPP (TRep t r), CElt t r, TElt t (ZpOf r),
+           TRep t (ZpOf r) ~ ZpOf (TRep t r))
           => Tagged m [Cyc t m' r]
 crtSet = (Pow <$>) <$> U.crtSet
 {-# INLINABLE crtSet #-}

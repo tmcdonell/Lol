@@ -123,7 +123,7 @@ class (UnPP (CharOf zp) ~ '(Prime2,e)) => PTRound t m m' e zp zq z gad zqs where
   type ZqResult e zq (zqs :: [*])
 
   roundHints :: (MonadRandom rnd)
-             => SK (Cyc t m' z) -> rnd (RoundHints t m m' z zp zq zqs gad)
+             => SK v (Cyc t m' z) -> rnd (RoundHints t m m' z zp zq zqs gad)
 
   -- round coeffs near 0 to 0 and near q/2 to 1
   -- round(q/p*x) (with "towards infinity tiebreaking")
@@ -184,7 +184,7 @@ data TunnelHints gad t rngs z zp zq zqs where
 class Tunnel xs t z zp zq gad where
 
   tunnelHints :: (MonadRandom rnd, Head xs ~ '(r,r'), Last xs ~ '(s,s'))
-              => SK (Cyc t r' z) -> rnd (TunnelHints gad t xs z zp zq zqs, SK (Cyc t s' z))
+              => SK v (Cyc t r' z) -> rnd (TunnelHints gad t xs z zp zq zqs, SK v (Cyc t s' z))
 
   tunnelInternal :: (Head xs ~ '(r,r'), Last xs ~ '(s,s')) =>
     TunnelHints gad t xs z zp zq zqs -> CT r zp (Cyc t r' zq) -> CT s zp (Cyc t s' zq)
@@ -195,9 +195,9 @@ instance Tunnel '[ '(m,m') ] t z zp zq gad where
 
   tunnelInternal _ = id
 
-instance (TunnelCtx t e r s e' r' s' z zp zq gad,                  -- tunnelCT
-          e ~ FGCD r s, e `Divides` r, e `Divides` s,              -- linearDec
-          ZPP zp, TElt t (ZpOf zp),                                -- crtSet
+instance (TunnelCtx t e r s e' r' s' z zp zq gad,                        -- tunnelCT
+          e ~ FGCD r s, e `Divides` r, e `Divides` s,                    -- linearDec
+          ZPP zp, ZPP (TRep t zp), TElt t (ZpOf zp), TRep t (ZpOf zp) ~ ZpOf (TRep t zp), -- crtSet
           Tunnel ('(s,s') ': rngs) t z zp zq gad)
   => Tunnel ('(r,r') ': '(s,s') ': rngs) t z zp zq gad where
 

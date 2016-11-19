@@ -34,7 +34,7 @@ import MathObj.Matrix
 import qualified Test.Framework as TF
 
 homomPRFTests :: forall t e r r' s s' rngs z zp zq zqs prfgad ksgad ptrngs rnd .
-  (MonadRandom rnd, Random (SK (Cyc t r' z)),
+  (MonadRandom rnd, Random (SK Double (Cyc t r' z)),
    C t e r r' s s' rngs z zp zq zqs prfgad ksgad ptrngs)
   => Int -> Proxy '(rngs,zp,zq,zqs,prfgad,ksgad) -> Proxy t -> [rnd TF.Test]
 homomPRFTests size _ _ =
@@ -53,7 +53,7 @@ type C t e r r' s s' rngs z zp zq zqs prfgad ksgad ptrngs =
    PTTunnel t ptrngs (TwoOf zp),                      -- tunnel
    Tunnel rngs t z zp (ZqUp zq zqs) ksgad,            -- tunnelHints
    PTRound t s s' e zp (ZqDown zq zqs) z ksgad zqs,   -- roundHints
-   EncryptCtx t r r' z zp zq,                         -- encrypt
+   EncryptCtx t r r' z zp zq Double,                  -- encrypt
    MulPublicCtx t r r' zp zq,                         -- homomPRF
    MultiTunnelCtx rngs r r' s s' t z zp zq ksgad zqs, -- homomPRF
    DecryptCtx t s s' z (TwoOf zp) (ZqResult e (ZqDown zq zqs) zqs), -- decrypt
@@ -64,7 +64,7 @@ type C t e r r' s s' rngs z zp zq zqs prfgad ksgad ptrngs =
 -- EAC: too complicated for PartialTypeSigs?
 prop_keyHomom :: forall t e r r' s s' rngs z zp zq zqs prfgad ksgad ptrngs .
   (C t e r r' s s' rngs z zp zq zqs prfgad ksgad ptrngs)
-  => Int -> Cyc t r zp -> SK (Cyc t r' z) -> Test '(t,rngs,zp,zq,zqs,prfgad,ksgad)
+  => Int -> Cyc t r zp -> SK Double (Cyc t r' z) -> Test '(t,rngs,zp,zq,zqs,prfgad,ksgad)
 prop_keyHomom size s sk = testIO $ do
   family :: PRFFamily prfgad _ _ <- randomFamily size
   x <- ((`mod` (2^size)) . abs) <$> getRandom
@@ -91,7 +91,7 @@ instance PTTunnel t '[r] z where
 
 instance (e ~ FGCD r s, e `Divides` r, e `Divides` s, PTTunnel t (s ': rngs) zp,
           CElt t zp,  -- evalLin
-          ZPP zp, TElt t (ZpOf zp) -- crtSet
+          ZPP zp, ZPP (TRep t zp), TElt t (ZpOf zp), TRep t (ZpOf zp) ~ ZpOf (TRep t zp) -- crtSet
           )
   => PTTunnel t (r ': s ': rngs) zp where
   tunnel _ =

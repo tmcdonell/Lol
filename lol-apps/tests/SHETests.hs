@@ -72,7 +72,7 @@ tunnelTests _ _ _ =
 
 
 prop_encDecU :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
-  => PT (Cyc t m zp) -> SK (Cyc t m' z) -> Test '(t,m,m',zp,zq)
+  => PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq)
 prop_encDecU x sk = testIO $ do
   y :: CT m zp (Cyc t m' zq) <- encrypt sk x
   let x' = decryptUnrestricted sk $ y
@@ -81,7 +81,7 @@ prop_encDecU x sk = testIO $ do
 prop_addPub :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => Cyc t m zp
      -> PT (Cyc t m zp)
-     -> SK (Cyc t m' z)
+     -> SK Double (Cyc t m' z)
      -> Test '(t,m,m',zp,zq)
 prop_addPub a pt sk = testIO $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
@@ -92,7 +92,7 @@ prop_addPub a pt sk = testIO $ do
 prop_mulPub :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => Cyc t m zp
      -> PT (Cyc t m zp)
-     -> SK (Cyc t m' z)
+     -> SK Double (Cyc t m' z)
      -> Test '(t,m,m',zp,zq)
 prop_mulPub a pt sk = testIO $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
@@ -101,7 +101,7 @@ prop_mulPub a pt sk = testIO $ do
   return $ pt' == (a*pt)
 
 prop_addScalar :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
-  => zp -> PT (Cyc t m zp) -> SK (Cyc t m' z) -> Test '(t,m,m',zp,zq)
+  => zp -> PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq)
 prop_addScalar c pt sk = testIO $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
   let ct' = addScalar c ct
@@ -111,7 +111,7 @@ prop_addScalar c pt sk = testIO $ do
 prop_ctadd :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => PT (Cyc t m zp)
      -> PT (Cyc t m zp)
-     -> SK (Cyc t m' z)
+     -> SK Double (Cyc t m' z)
      -> Test '(t,m,m',zp,zq)
 prop_ctadd pt1 pt2 sk = testIO $ do
   ct1 :: CT m zp (Cyc t m' zq) <- encrypt sk pt1
@@ -123,7 +123,7 @@ prop_ctadd pt1 pt2 sk = testIO $ do
 prop_ctmul :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => PT (Cyc t m zp)
      -> PT (Cyc t m zp)
-     -> SK (Cyc t m' z)
+     -> SK Double (Cyc t m' z)
      -> Test '(t,m,m',zp,zq)
 prop_ctmul pt1 pt2 sk = testIO $ do
   ct1 :: CT m zp (Cyc t m' zq) <- encrypt sk pt1
@@ -133,26 +133,26 @@ prop_ctmul pt1 pt2 sk = testIO $ do
   return $ pt1*pt2 == pt'
 
 prop_ctzero :: forall t m m' z zp (zq :: *) . (z ~ LiftOf zp, Fact m, _)
-  => SK (Cyc t m' z) -> Test '(t,m,m',zp,zq)
+  => SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq)
 prop_ctzero sk =
   let z = decryptUnrestricted sk (zero :: CT m zp (Cyc t m' zq))
   in test $ zero == z
 
 prop_ctone :: forall t m m' z zp (zq :: *) . (z ~ LiftOf zp, Fact m, _)
-  => SK (Cyc t m' z) -> Test '(t,m,m',zp,zq)
+  => SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq)
 prop_ctone sk =
   let z = decryptUnrestricted sk (one :: CT m zp (Cyc t m' zq)) :: Cyc t m zp
   in test $ one == z
 
 prop_encDec :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
-  => SK (Cyc t m' z) -> Cyc t m zp -> Test '(t,m,m',zp,zq)
+  => SK Double (Cyc t m' z) -> Cyc t m zp -> Test '(t,m,m',zp,zq)
 prop_encDec sk x = testIO $ do
   y :: CT m zp (Cyc t m' zq) <- encrypt sk x
   let x' = decrypt sk $ y
   return $ x == x'
 
 prop_modSwPT :: forall t m m' z zp (zp' :: *) (zq :: *) . (z ~ LiftOf zp, _)
-  => PT (Cyc t m zp) -> SK (Cyc t m' z) -> Test '(t,m,m',zp,zp',zq)
+  => PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zp',zq)
 prop_modSwPT pt sk = testIO $ do
   y :: CT m zp (Cyc t m' zq) <- encrypt sk pt
   let p = proxy modulus (Proxy::Proxy zp)
@@ -164,7 +164,7 @@ prop_modSwPT pt sk = testIO $ do
   return $ x'' == rescaleCyc Dec x
 
 prop_ksLin :: forall t m m' z zp (zq :: *) (zq' :: *) (gad :: *) . (z ~ LiftOf zp, _)
-  => PT (Cyc t m zp) -> SK (Cyc t m' z) -> SK (Cyc t m' z) -> Test '(t,m,m',zp,zq,zq',gad)
+  => PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq,zq',gad)
 prop_ksLin pt skin skout = testIO $ do
   ct <- encrypt skin pt
   kslin <- proxyT (keySwitchLinear skout skin) (Proxy::Proxy (gad,zq'))
@@ -173,7 +173,7 @@ prop_ksLin pt skin skout = testIO $ do
   return $ pt == pt'
 
 prop_ksQuad :: forall t m m' z zp zq (zq' :: *) (gad :: *) . (z ~ LiftOf zp, _)
-  => PT (Cyc t m zp) -> PT (Cyc t m zp) -> SK (Cyc t m' z) -> Test '(t,m,m',zp,zq,zq',gad)
+  => PT (Cyc t m zp) -> PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq,zq',gad)
 prop_ksQuad pt1 pt2 sk = testIO $ do
   ct1 :: CT m zp (Cyc t m' zq) <- encrypt sk pt1
   ct2 <- encrypt sk pt2
@@ -184,7 +184,7 @@ prop_ksQuad pt1 pt2 sk = testIO $ do
   return $ ptProd == pt'
 
 prop_ctembed :: forall t r r' s s' z zp (zq :: *) . (z ~ LiftOf zp, Fact s', Fact s, _)
-  => PT (Cyc t r zp) -> SK (Cyc t r' z) -> Test '(t,r,r',s,s',zp,zq)
+  => PT (Cyc t r zp) -> SK Double (Cyc t r' z) -> Test '(t,r,r',s,s',zp,zq)
 prop_ctembed pt sk =testIO $ do
   ct :: CT r zp (Cyc t r' zq) <- encrypt sk pt
   let ct' = embedCT ct :: CT s zp (Cyc t s' zq)
@@ -193,7 +193,7 @@ prop_ctembed pt sk =testIO $ do
 
 -- CT must be encrypted with key from small ring
 prop_cttwace :: forall t r r' s s' z zp (zq :: *) . (z ~ LiftOf zp, Fact r, _)
-  => PT (Cyc t s zp) -> SK (Cyc t r' z) -> Test '(t,r,r',s,s',zp,zq)
+  => PT (Cyc t s zp) -> SK Double (Cyc t r' z) -> Test '(t,r,r',s,s',zp,zq)
 prop_cttwace pt sk = testIO $ do
   ct :: CT s zp (Cyc t s' zq) <- encrypt (embedSK sk) pt
   let ct' = twaceCT ct :: CT r zp (Cyc t r' zq)
@@ -202,11 +202,11 @@ prop_cttwace pt sk = testIO $ do
 
 prop_ringTunnel :: forall t e r s e' r' s' z zp zq gad .
   (TunnelCtx t e r s e' r' s' z zp zq gad,
-   EncryptCtx t r r' z zp zq,
+   EncryptCtx t r r' z zp zq Double,
    DecryptUCtx t s s' z zp zq,
    Random zp, Eq zp,
    e ~ FGCD r s, Fact e)
-  => PT (Cyc t r zp) -> SK (Cyc t r' z) -> SK (Cyc t s' z) -> Test '(t,r,r',s,s',zp,zq,gad)
+  => PT (Cyc t r zp) -> SK Double (Cyc t r' z) -> SK Double (Cyc t s' z) -> Test '(t,r,r',s,s',zp,zq,gad)
 prop_ringTunnel x skin skout = testIO $ do
   let totr = proxy totientFact (Proxy::Proxy r)
       tote = proxy totientFact (Proxy::Proxy e)
