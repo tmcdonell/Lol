@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE GADTs                 #-} -- needed for inferred TRep constraint
+{-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE RebindableSyntax      #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
@@ -15,7 +15,6 @@ import Control.Monad.Random
 import Crypto.Lol
 import Crypto.Lol.Applications.KeyHomomorphicPRF
 import Crypto.Lol.Cyclotomic.UCyc
-import Crypto.Lol.CRTrans
 import Crypto.Lol.Tests
 
 import MathObj.Matrix
@@ -31,8 +30,7 @@ khprfTests _ _ =
    genTestArgs "PRF_5bits" (prop_keyHomom 5)]
 
 -- +/-1 in every coefficient of the rounding basis
-prop_keyHomom :: forall t m zp zq gad .
-  (Fact m, CElt t zq, CElt t zp, _)
+prop_keyHomom :: forall t m zp zq gad . (Fact m, CElt t zq, CElt t zp, _)
   => Int -> Test '(t,m,zp,zq,gad)
 prop_keyHomom size = testIO $ do
   family :: PRFFamily gad (Cyc t m zq) (Cyc t m zp) <- randomFamily size
