@@ -1,6 +1,7 @@
 :set -ichallenges:challenges/exec
 :set -icompiler
 :set -ilol
+:set -ilol-accelerate:lol-accelerate/tests:lol-accelerate/benchmarks
 :set -ilol-apps:lol-apps/benchmarks:lol-apps/examples:lol-apps/tests
 :set -ilol-benches:lol-benches/exec
 :set -ilol-cpp:lol-cpp/benchmarks:lol-cpp/tests
