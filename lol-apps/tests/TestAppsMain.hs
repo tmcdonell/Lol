@@ -9,6 +9,8 @@
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
+module TestAppsMain where
+
 import Control.Monad.Random
 
 import Crypto.Lol (Cyc)
@@ -96,7 +98,7 @@ defaultTests pt pgad  =
     khprfTests (Proxy::Proxy '(F32, Zq 2, Zq 8, TrivGad)),
     khprfTests (Proxy::Proxy '(F32, Zq 32, Zq 257, BaseBGad 2))],
   testGroupM "HomomPRF" $ concat $ ($ pt) <$> [
-    homomPRFTests 5 (Proxy::Proxy '(RngList, ZP8, ZQ4, ZQSeq, PRFGad, KSGad))]
+    homomPRFTests 5 (Proxy::Proxy '(RngList, ZP, ZQ, ZQSeq, PRFGad, KSGad))]
   ]
 
 -- EAC: is there a simple way to parameterize the variance?

@@ -1,3 +1,12 @@
+This branch (acctensor) is up-to-date with split-packages. Relative to
+split-packages, it modifies Lol to support Trevor's Accelerate backend. The
+approach taken here is essentially Trevor's original approach. Unfortunately,
+the result is a mess, with changes affecting top-level code. This is not a candidate
+for merging at this time, but it is a compiling branch that can help us evaluate
+the viability of AccTensor.
+
+--------------------------------------------------------------------------------
+
 This repository contains several Haskell libraries:
 
   * The `lol` directory contains the Haskell library Λ ○ λ (Lol),
