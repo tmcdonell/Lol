@@ -3,6 +3,7 @@
 {-# LANGUAGE RebindableSyntax      #-}
 {-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 module Generate (generateMain, instanceCont, instanceDisc, instanceRLWR) where
 

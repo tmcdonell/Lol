@@ -15,6 +15,7 @@ import Control.Monad.Random
 
 import Crypto.Lol (Cyc)
 import Crypto.Lol.Applications.SymmSHE hiding (CT)
+import Crypto.Lol.Cyclotomic.Tensor.Accelerate
 import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Cyclotomic.Tensor.Repa
 import Crypto.Lol.Factored
@@ -41,8 +42,9 @@ type family Zq (a :: k) :: * where
 main :: IO ()
 main = do
   flip defaultMainWithArgs ["--threads=1","--maximum-generated-tests=100"] $ concat
-    [defaultTests (Proxy::Proxy CT) (Proxy::Proxy TrivGad),
-     defaultTests (Proxy::Proxy RT) (Proxy::Proxy TrivGad)]
+    [--defaultTests (Proxy::Proxy CT) (Proxy::Proxy TrivGad),
+     --defaultTests (Proxy::Proxy RT) (Proxy::Proxy TrivGad),
+     defaultTests (Proxy::Proxy AT) (Proxy::Proxy TrivGad)]
 
 defaultTests :: _ => Proxy t -> Proxy gad -> [Test]
 defaultTests pt pgad  =
