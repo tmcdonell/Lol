@@ -32,7 +32,6 @@ packages:
 - lol-cpp/
 - lol-repa/
 - lol-tests/
-- numeric-prelude-accelerate/
 
 - location:
     git:    https://github.com/tmcdonell/accelerate.git
@@ -57,6 +56,11 @@ packages:
     - 'accelerate-llvm'
     - 'accelerate-llvm-native'
     - 'accelerate-llvm-ptx'
+
+- location:
+    git:    https://github.com/tmcdonell/numeric-prelude-accelerate.git
+    commit: abd54b4156353278652b532e9869b676dfccf9c8
+  extra-dep: true
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 extra-deps:
