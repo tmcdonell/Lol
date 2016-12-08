@@ -4,8 +4,9 @@ make
 cd ..
 stack exec ghci -- -j +RTS -A128M -n4M -RTS lol-cpp/lib/*.so $@
 
-# change history so that :r is the "last" ghci command
-# without this, :q is always the most recent command in the history
+# change history so that :r is the "last" ghci command rather than ':q'.
+# Not necessary if you use CTRL-D to exit.
+#
 SED=$(which gsed || which sed)
-[ -z ${SED} ] || ${SED} -i "1s/.*/:r/" "${HOME}/.ghc/ghci_history"
+[ -z ${SED} ] || ${SED} -i "1s/:q/:r/" "${HOME}/.ghc/ghci_history"
 
