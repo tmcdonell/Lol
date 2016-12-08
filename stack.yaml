@@ -26,7 +26,6 @@ packages:
 - challenges/
 - compiler/
 - lol/
-- lol-accelerate/
 - lol-apps/
 - lol-benches/
 - lol-cpp/
@@ -34,23 +33,23 @@ packages:
 - lol-tests/
 
 - location:
-    git:    https://github.com/tmcdonell/accelerate.git
-    commit: 020d326285947e2953cfe091dcedb037904ed37d
+    git:    https://github.com/AccelerateHS/accelerate.git
+    commit: da996ecc5403234b5adc18ee6f30fa8d5a4d4022
   extra-dep: true
 
 - location:
-    git:    https://github.com/tmcdonell/accelerate-io.git
-    commit: a5e73442fd987243de12bfb0c1ff7a87d701ea94
+    git:    https://github.com/AccelerateHS/accelerate-io.git
+    commit: f4c84a5c961345bf65059f555f21c6e8bf3070a1
   extra-dep: true
 
 - location:
-    git:    https://github.com/tmcdonell/accelerate-cuda.git
-    commit: e5d6dbfcf557fb1dd8eb3f295272fffd19fa3029
+    git:    https://github.com/AccelerateHS/accelerate-cuda.git
+    commit: cd8d31c24717ab1041057d1979113689ac79fead
   extra-dep: true
 
 - location:
-    git:    https://github.com/tmcdonell/accelerate-llvm.git
-    commit: 20d417aaee1d26f37255929ed604a6d364832bbb
+    git:    https://github.com/AccelerateHS/accelerate-llvm.git
+    commit: bc4fa35bf5c6502869b1c30e2ebabc0691e0f300
   extra-dep: true
   subdirs:
     - 'accelerate-llvm'
@@ -58,41 +57,61 @@ packages:
     - 'accelerate-llvm-ptx'
 
 - location:
+    git:    https://github.com/tmcdonell/Lol-accelerate.git
+    commit: b41641877e35b36c952ace3897319d881f199ee8
+  extra-dep: true
+
+- location:
     git:    https://github.com/tmcdonell/numeric-prelude-accelerate.git
-    commit: abd54b4156353278652b532e9869b676dfccf9c8
+    commit: b1c3630f09e9e45a26deac3c1fe6194b9eb40263
   extra-dep: true
 
 # Dependency packages to be pulled from upstream that are not in the resolver
 extra-deps:
-- non-negative-0.1.1
-- numeric-prelude-0.4.2
-- tagged-transformer-0.8
-- syntactic-3.6.2
-- type-natural-0.7.1.1
-- equational-reasoning-0.4.1.1
-- ghc-typelits-presburger-0.1.1.0
-- monomorphic-0.0.3.3
-- tree-view-0.5
-- ghc-typelits-natnormalise-0.4.6
-- nist-beacon-0.2.0.0
-- storable-record-0.0.3.1
-- unique-0
 - chaselev-deque-0.5.0.5
-- http-conduit-2.2.3
+- cuda-0.7.5.1
+- equational-reasoning-0.4.1.1
+- ghc-typelits-natnormalise-0.4.6
+- ghc-typelits-presburger-0.1.1.0
 - http-client-0.5.4
 - http-client-tls-0.3.3
-- cuda-0.7.0.0
+- http-conduit-2.2.3
 - libffi-0.1
 - llvm-general-3.5.1.2
 - llvm-general-pure-3.5.1.0
+- monomorphic-0.0.3.3
+- nist-beacon-0.2.0.0
+- non-negative-0.1.1
+- numeric-prelude-0.4.2
+- nvvm-0.7.5.1
+- storable-record-0.0.3.1
+- syntactic-3.6.2
+- tagged-transformer-0.8
+- tree-view-0.5
+- type-natural-0.7.1.1
+- unique-0
 
 # Override default flag values for local packages and extra-deps
 flags:
+  llvm-general:
+    shared-llvm: true
+  lol-accelerate:
+    cuda: false
+    llvm-cpu: false
+    llvm-ptx: false
   accelerate:
+    internal-checks: false
     unsafe-checks: false
     bounds-checks: true
     debug: false
-    internal-checks: false
+    ekg: false
+  accelerate-cuda:
+    debug: false
+  accelerate-llvm-native:
+    debug: false
+  accelerate-llvm-ptx:
+    debug: false
+    nvvm:  false
 
 # Extra package databases containing global packages
 extra-package-dbs: []
