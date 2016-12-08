@@ -49,7 +49,7 @@ packages:
 
 - location:
     git:    https://github.com/AccelerateHS/accelerate-llvm.git
-    commit: bc4fa35bf5c6502869b1c30e2ebabc0691e0f300
+    commit: c844751d82a4c2c945473f3c97977001c864ca81
   extra-dep: true
   subdirs:
     - 'accelerate-llvm'
@@ -66,6 +66,15 @@ packages:
     commit: b1c3630f09e9e45a26deac3c1fe6194b9eb40263
   extra-dep: true
 
+- location:
+    git:    https://github.com/bscarlet/llvm-general.git
+    # commit: 529f9bf117b5ffd1ccf7ebeb679a97b3b1c67938  # 3.8
+    commit: ec1ad5bd2112e7f64dbb43441b5e2075cf6ad8e7  # 3.9
+  extra-dep: true
+  subdirs:
+    - 'llvm-general'
+    - 'llvm-general-pure'
+
 # Dependency packages to be pulled from upstream that are not in the resolver
 extra-deps:
 - chaselev-deque-0.5.0.5
@@ -77,8 +86,8 @@ extra-deps:
 - http-client-tls-0.3.3
 - http-conduit-2.2.3
 - libffi-0.1
-- llvm-general-3.5.1.2
-- llvm-general-pure-3.5.1.0
+# - llvm-general-3.5.1.2
+# - llvm-general-pure-3.5.1.0
 - monomorphic-0.0.3.3
 - nist-beacon-0.2.0.0
 - non-negative-0.1.1
@@ -97,7 +106,7 @@ flags:
     shared-llvm: true
   lol-accelerate:
     cuda: false
-    llvm-cpu: false
+    llvm-cpu: true
     llvm-ptx: false
   accelerate:
     internal-checks: false
