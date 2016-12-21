@@ -454,10 +454,10 @@ ctCRT = do
     withPtrArray ru' (flip withBasicArgs x . dcrt)
 
 -- CTensor CRT^(-1) functions take inverse rus
-ctCRTInv :: forall mon m r . (Storable r, CRTrans mon r, Dispatch r, Fact m, CRTIndex r ~ Int)
+ctCRTInv :: (Storable r, CRTrans mon r, Dispatch r, Fact m, CRTIndex r ~ Int)
          => TaggedT m mon (CT' m r -> CT' m r)
 ctCRTInv = do
-  mhatInv <- snd <$> (crtInfo :: TaggedT m mon (Int -> r, r))
+  mhatInv <- snd <$> crtInfo
   ruinv' <- ruInv
   return $ \x -> unsafePerformIO $
     withPtrArray ruinv' (\ruptr -> with mhatInv (flip withBasicArgs x . dcrtinv ruptr))

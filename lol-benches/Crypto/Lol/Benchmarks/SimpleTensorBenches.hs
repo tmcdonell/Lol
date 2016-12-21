@@ -19,7 +19,7 @@ import Criterion
 
 import Crypto.Lol.Prelude
 import Crypto.Lol.Cyclotomic.Tensor
-import Crypto.Lol.Types (CryptoRand)
+import Crypto.Lol.Types
 import Crypto.Random
 
 -- | Benchmarks for single-index operations. There must be a CRT basis for \(O_m\) over @r@.
@@ -37,7 +37,7 @@ simpleTensorBenches1 _ _ = do
     bench "unzipPow"    $ nf unzipT x1,
     bench "unzipDec"    $ nf unzipT x1,
     bench "unzipCRT"    $ nf unzipT x1,
-    bench "zipWith (*)" $ nf (zipWithT (*) x2 :: t m r -> t m r) x3,
+    bench "zipWith (*)" $ nf (zipWithT (*) x2 :: _ -> t m r) x3,
     bench "crt"         $ nf (fromJust' "SimpleTensorBenches.crt" crt) x2,
     bench "crtInv"      $ nf (fromJust' "SimpleTensorBenches.crtInv" crtInv) x2,
     bench "l"           $ nf l x2,

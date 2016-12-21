@@ -59,7 +59,7 @@ class (Ring r, Ring (CRTExt r)) => CRTEmbed r where
   fromExt :: CRTExt r -> r
 
 -- | Product ring
-instance (CRTrans mon a, CRTrans mon b, CRTIndex a ~ Int, CRTIndex b ~ Int) => CRTrans mon (a,b) where
+instance (CRTrans mon a, CRTrans mon b, CRTIndex a ~ CRTIndex b) => CRTrans mon (a,b) where
   type CRTIndex (a,b) = CRTIndex a
   crtInfo = do
     (fa, inva) <- crtInfo
