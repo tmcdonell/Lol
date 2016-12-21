@@ -5,6 +5,8 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 
+-- | Generates challenges in non-legacy proto format.
+
 module Generate (generateMain, instanceCont, instanceDisc, instanceRLWR) where
 
 import Beacon
@@ -45,8 +47,6 @@ import qualified Data.Tagged          as T
 import System.Directory (createDirectoryIfMissing)
 
 import Text.Printf
-import Text.ProtocolBuffers        (messagePut)
-import Text.ProtocolBuffers.Header hiding (ByteString, pack)
 
 -- | Generate and serialize challenges given the path to the root of the tree
 -- and an initial beacon address.
@@ -168,10 +168,6 @@ writeInstanceU path challName iu = do
     (ID _ inst) -> writeProtoType instFN inst
     (IR _ inst) -> writeProtoType instFN inst
   writeProtoType secretFN s
-
--- | Writes any auto-gen'd proto object to path/filename.
-writeProtoType :: (ReflectDescriptor a, Wire a) => FilePath -> a -> IO ()
-writeProtoType fileName obj = BS.writeFile fileName $ messagePut obj
 
 -- | Generate a continuous RLWE instance along with its (uniformly
 -- random) secret, using the given scaled variance and number of

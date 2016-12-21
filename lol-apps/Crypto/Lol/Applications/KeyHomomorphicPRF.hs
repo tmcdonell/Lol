@@ -16,6 +16,7 @@ module Crypto.Lol.Applications.KeyHomomorphicPRF
 ) where
 
 import Control.Applicative ((<$>))
+import Control.DeepSeq
 import Control.Monad.Random hiding (fromList)
 import Control.Monad.State
 
@@ -30,8 +31,15 @@ import MathObj.Matrix
 data FullBinTree = L
                  | I Int FullBinTree FullBinTree
 
+instance NFData FullBinTree where
+  rnf L = ()
+  rnf (I i t1 t2) = rnf i `seq` rnf t1 `seq` rnf t2
+
 -- | Parameters for PRF
 data PRFFamily gad rq rp = Params (Matrix rq) (Matrix rq) FullBinTree -- | a0, a1, tree
+
+instance (NFData rq) => NFData (PRFFamily gad rq rp) where
+  rnf (Params m1 m2 t) = rnf m1 `seq` rnf m2 `seq` rnf t
 
 -- | Smart constructor
 makeFamily :: forall rq rp gad . (Gadget gad rq)
@@ -54,10 +62,17 @@ data DecoratedTree r =
   -- numleaves, input value, output, left subtree, decomposed result of right subtree, right subtree
   | DI Int Int (Matrix r) (DecoratedTree r) (Matrix r) (DecoratedTree r)
 
+instance (NFData r) => NFData (DecoratedTree r) where
+  rnf (DL i m) = rnf i `seq` rnf m
+  rnf (DI i1 i2 m1 d1 m2 d2) = rnf i1 `seq` rnf i2 `seq` rnf m1 `seq` rnf d1 `seq` rnf m2 `seq` rnf d2
+
 -- | State of the PRF computation. This permits incremental computation.
 data PRFState rq rp where
   PRFState :: (Decompose gad rq)
     => Proxy gad -> Matrix rq -> Matrix rq -> DecoratedTree rq -> PRFState rq rp
+
+instance (NFData rq) => NFData (PRFState rq rp) where
+  rnf (PRFState Proxy m1 m2 d) = rnf m1 `seq` rnf m2 `seq` rnf d
 
 -- | Given PRF parameters and an optional inital input value (default is 0),
 --   produces an initial PRF state.

@@ -20,10 +20,9 @@ import Crypto.Random.DRBG
 
 import Control.Monad.Except
 
-import           Data.ByteString.Lazy (unpack)
-import qualified Data.ByteString.Lazy as BS
-import           Data.Int
-import           Data.Maybe
+import Data.ByteString.Lazy (unpack)
+import Data.Int
+import Data.Maybe
 
 import Net.Beacon
 
@@ -33,8 +32,6 @@ import System.Directory    (doesDirectoryExist, doesFileExist,
 import System.FilePath     ((</>))
 
 import Text.Printf
-import Text.ProtocolBuffers        (messageGet)
-import Text.ProtocolBuffers.Header (ReflectDescriptor, Wire)
 
 type ChallengeID = Int32
 type InstanceID = Int32
@@ -70,20 +67,6 @@ checkFileExists file = do
   fileExists <- liftIO $ doesFileExist file
   throwErrorUnless fileExists $
     "Error reading " ++ file ++ ": file does not exist."
-
--- | Read a serialized protobuffer from a file.
-readProtoType :: (ReflectDescriptor a, Wire a, MonadIO m, MonadError String m)
-                 => FilePath -> m a
-readProtoType file = do
-  checkFileExists file
-  bs <- liftIO $ BS.readFile file
-  case messageGet bs of
-    (Left str) -> throwError $
-      "Error when reading from protocol buffer. Got string " ++ str
-    (Right (a,bs')) -> do
-      throwErrorUnless (BS.null bs')
-        "Error when reading from protocol buffer. There were leftover bits!"
-      return a
 
 -- | Parse the beacon time/offset used to reveal a challenge.
 parseBeaconAddr :: (MonadError String m) => Challenge -> m BeaconAddr
