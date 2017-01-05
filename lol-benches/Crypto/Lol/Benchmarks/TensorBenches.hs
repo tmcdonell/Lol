@@ -22,7 +22,7 @@ import Crypto.Random
 
 -- | Benchmarks for single-index operations. There must be a CRT basis for \(O_m\) over @r@.
 {-# INLINABLE tensorBenches1 #-}
-tensorBenches1 :: (MonadRandom rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
+tensorBenches1 :: (Monad rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
 tensorBenches1 ptmr pgen = benchGroup "Tensor" $ ($ ptmr) <$> [
   genBenchArgs "unzipPow" bench_unzip,
   genBenchArgs "unzipDec" bench_unzip,
@@ -44,7 +44,7 @@ tensorBenches1 ptmr pgen = benchGroup "Tensor" $ ($ ptmr) <$> [
 
 -- | Benchmarks for inter-ring operations. There must be a CRT basis for \(O_{m'}\) over @r@.
 {-# INLINABLE tensorBenches2 #-}
-tensorBenches2 :: (MonadRandom rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
+tensorBenches2 :: (Monad rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
 tensorBenches2 p = benchGroup "Tensor" $ ($ p) <$> [
   genBenchArgs "twacePow" bench_twacePow,
   genBenchArgs "twaceDec" bench_twacePow, -- yes, twacePow is correct here. It's the same function!
@@ -60,7 +60,7 @@ bench_unzip = bench unzipT
 
 {-# INLINABLE bench_mul #-}
 -- no CRT conversion, just coefficient-wise multiplication
-bench_mul :: forall t m r . (Tensor t, _) => t m r -> t m r -> Bench '(t,m,r)
+bench_mul :: forall t m r . _ => t m r -> t m r -> Bench '(t,m,r)
 bench_mul a = bench (zipWithT (*) a :: t m r -> t m r)
 
 {-# INLINABLE bench_crt #-}
@@ -85,6 +85,7 @@ bench_lInv = bench lInv
 
 {-# INLINABLE bench_liftPow #-}
 -- lift an element in the Pow basis
+-- EAC: When I elide the constraints, GHC 8.0.112313 says to report a bug.
 bench_liftPow :: forall t m r . (LiftOf (TRep t r) ~ TRep t (LiftOf r), _) => t m r -> Bench '(t,m,r)
 bench_liftPow = bench (fmapT lift :: t m r -> t m (LiftOf r))
 
@@ -122,11 +123,11 @@ bench_divgCRT = bench (fromJust' "TensorBenches.bench_divgCRT" divGCRT)
 -- generate a rounded error term
 bench_errRounded :: forall t m r gen . (TElt t r, Fact m, CryptoRandomGen gen, _)
   => Double -> Bench '(t,m,r,gen)
-bench_errRounded (v :: Double) = (benchIO $ do
+bench_errRounded v = benchIO $ do
   gen <- newGenIO
   return $ evalRand
     (fmapT (roundMult one) <$>
-      (tGaussianDec v :: Rand (CryptoRand gen) (t m Double)) :: Rand (CryptoRand gen) (t m (LiftOf r))) gen) ::  Bench '(t,m,r,gen)
+      (tGaussianDec v :: Rand (CryptoRand gen) (t m Double)) :: Rand (CryptoRand gen) (t m (LiftOf r))) gen
 
 -- EAC: due to GHC bug #12634, I have to give these a little more help than the corresponding functions
 -- in UCyc and Cyc benches. Not a huge deal.

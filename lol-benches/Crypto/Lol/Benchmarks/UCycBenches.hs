@@ -23,7 +23,7 @@ import Crypto.Random
 
 -- | Benchmarks for single-index operations. There must be a CRT basis for \(O_m\) over @r@.
 {-# INLINABLE ucycBenches1 #-}
-ucycBenches1 :: (MonadRandom rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
+ucycBenches1 :: (Monad rnd, _) => Proxy '(t,m,r) -> Proxy gen -> rnd Benchmark
 ucycBenches1 ptmr pgen = benchGroup "UCyc" $ ($ ptmr) <$> [
   genBenchArgs "unzipPow" bench_unzipUCycPow,
   genBenchArgs "unzipDec" bench_unzipUCycDec,
@@ -45,7 +45,7 @@ ucycBenches1 ptmr pgen = benchGroup "UCyc" $ ($ ptmr) <$> [
 
 -- | Benchmarks for inter-ring operations. There must be a CRT basis for \(O_{m'}\) over @r@.
 {-# INLINE ucycBenches2 #-}
-ucycBenches2 :: (MonadRandom rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
+ucycBenches2 :: (Monad rnd, _) => Proxy '(t,m,m',r) -> rnd Benchmark
 ucycBenches2 p = benchGroup "UCyc" $ ($ p) <$> [
   genBenchArgs "twacePow" bench_twacePow,
   genBenchArgs "twaceDec" bench_twaceDec,

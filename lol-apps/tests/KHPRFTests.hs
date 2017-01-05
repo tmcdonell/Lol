@@ -46,5 +46,5 @@ prop_keyHomom size = testIO $ do
       a = uncycPow <$> prf3
       b = uncycPow <$> prf3'
       c = concat $ rows $ a - b
-      c' = map (maximum . fmapPow abs . lift) c :: [LiftOf zp]
+      c' = map (maximum . fmapPow abs . lift) c
   return $ maximum c' <= 1

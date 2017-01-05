@@ -5,7 +5,7 @@ name:                lol
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.5.0.2
+version:             0.6.0.0
 synopsis:            A library for lattice cryptography.
 homepage:            https://github.com/cpeikert/Lol
 Bug-Reports:         https://github.com/cpeikert/Lol/issues
@@ -17,7 +17,7 @@ copyright:           Eric Crockett, Chris Peikert
 category:            Crypto
 stability:           experimental
 build-type:          Simple
-extra-source-files:  README, CHANGES.md
+extra-source-files:  README, CHANGES.md, Lol.proto, RLWE.proto
 cabal-version:       >= 1.10
 description:
     Λ ∘ λ (Lol) is a general-purpose library for ring-based lattice cryptography.
@@ -86,12 +86,21 @@ library
     Crypto.Lol.Types.ZPP
     Crypto.Lol.Types.Unsafe.ZqBasic
 
+    Crypto.Proto.Lol
+    Crypto.Proto.Lol.LinearRq
+    Crypto.Proto.Lol.R
+    Crypto.Proto.Lol.Rq1
+    Crypto.Proto.Lol.RqProduct
+    Crypto.Proto.Lol.Kq1
+    Crypto.Proto.Lol.KqProduct
+    Crypto.Proto.Lol.TypeRep
     Crypto.Proto.RLWE
-    Crypto.Proto.RLWE.Rq
-    Crypto.Proto.RLWE.Kq
     Crypto.Proto.RLWE.SampleCont
     Crypto.Proto.RLWE.SampleDisc
     Crypto.Proto.RLWE.SampleRLWR
+    Crypto.Proto.RLWE.SampleCont1
+    Crypto.Proto.RLWE.SampleDisc1
+    Crypto.Proto.RLWE.SampleRLWR1
 
     Crypto.Lol.Utils.GenArgs
     Crypto.Lol.Utils.ShowType
@@ -112,6 +121,7 @@ library
     crypto-api,
     data-default >= 0.3.0 && < 0.8,
     deepseq >= 1.4.1.1 && <1.5,
+    directory,
     monadcryptorandom,
     MonadRandom >= 0.2 && < 0.5,
     mtl >= 2.2.1 && < 2.3,

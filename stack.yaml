@@ -37,14 +37,14 @@ setup-info:
         sha1: a536228cb7265aef19b2842a2c81cfe9ca372e45
 
 packages:
-- challenges/
-- compiler/
-- lol/
-- lol-apps/
-- lol-benches/
-- lol-cpp/
-- lol-repa/
-- lol-tests/
+- compiler
+- lol
+- lol-apps
+- lol-benches
+- lol-cpp
+- lol-repa
+- lol-tests
+- rlwe-challenges
 
 - location:
     git:    https://github.com/AccelerateHS/accelerate.git

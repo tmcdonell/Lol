@@ -17,7 +17,7 @@ copyright:           Eric Crockett, Chris Peikert
 category:            Crypto
 stability:           experimental
 build-type:          Simple
-extra-source-files:  README, CHANGES.md
+extra-source-files:  README, CHANGES.md, Challenges.proto
 cabal-version:       >= 1.10
 description:
     Contains a library for reading serialized challenges
@@ -46,6 +46,10 @@ library
     Crypto.Proto.RLWE.Challenges.InstanceDisc
     Crypto.Proto.RLWE.Challenges.InstanceRLWR
     Crypto.Proto.RLWE.Challenges.Secret
+    Crypto.Proto.RLWE.Challenges.InstanceCont1
+    Crypto.Proto.RLWE.Challenges.InstanceDisc1
+    Crypto.Proto.RLWE.Challenges.InstanceRLWR1
+    Crypto.Proto.RLWE.Challenges.Secret1
 
   build-depends: base < 5,
                  lol >= 0.5.0.0,
@@ -78,7 +82,7 @@ executable rlwe-challenges
                  filepath,
                  http-client >= 0.5,
                  http-conduit,
-                 lol >= 0.5.0.0,
+                 lol >= 0.6.0.0,
                  lol-cpp,
                  MonadRandom,
                  mtl,

@@ -25,8 +25,6 @@ import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Utils.PrettyPrint.Table
 import Crypto.Lol.Types
 
-import HomomPRFBenches
-import HomomPRFParams hiding (Zq)
 import KHPRFBenches
 import SHEBenches
 import Crypto.Random.DRBG
@@ -52,13 +50,11 @@ benchNames = [
 
 main :: IO ()
 main = do
-  let o = (defaultOpts "HomomPRF"){benches=[]}
+  let o = (defaultOpts Nothing){benches=[]}
       pct = Proxy::Proxy AT
   bs <- sequence $
           sheBenches' pct (Proxy::Proxy TrivGad) (Proxy::Proxy HashDRBG) ++
-          [khprfBenches pct (Proxy::Proxy PRFGad),
-           homomprfBenches pct (Proxy::Proxy PRFGad)
-          ]
+          [khprfBenches pct (Proxy::Proxy (BaseBGad 2))]
   mapM_ (prettyBenches o) bs
 
 sheBenches' :: _ => Proxy t -> Proxy gad -> Proxy gen -> [rnd Benchmark]
@@ -111,11 +107,8 @@ khprfBenches pt _ = benchGroup "KHPRF Table"
   where
     benches' = khPRFBenches 5 pt (Proxy::Proxy F128) (Proxy::Proxy '(Zq 8, Zq 2, gad))
 
-homomprfBenches :: _ => Proxy t -> Proxy prfgad -> rnd Benchmark
-homomprfBenches pt pgad = benchGroup "HPRF Table/balanced-startup"   [benchHomomPRF 5 balancedTree [0] pt pgad]
-
 -- EAC: is there a simple way to parameterize the variance?
 -- generates a secret key with scaled variance 1.0
-instance (GenSKCtx t m' z) => Random (SK Double (Cyc t m' z)) where
+instance (GenSKCtx t m' z Double) => Random (SK Double (Cyc t m' z)) where
   random = runRand $ genSK (1 :: Double)
   randomR = error "randomR not defined for SK"
