@@ -72,12 +72,12 @@ packages:
 
 - location:
     git:    https://github.com/tmcdonell/Lol-accelerate.git
-    commit: 9a977a45159d0a146c4e0a29ea5aa952cb73d8d2
+    commit: 0fe9e997ab02083ff9761bf43c49ac17c0189460
   extra-dep: true
 
 - location:
     git:    https://github.com/tmcdonell/numeric-prelude-accelerate.git
-    commit: b1c3630f09e9e45a26deac3c1fe6194b9eb40263
+    commit: 8adc16cf42bfc43ca3967b8bdc33d4d442026751
   extra-dep: true
 
 - location:
@@ -92,7 +92,7 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 extra-deps:
 - chaselev-deque-0.5.0.5
-- cuda-0.7.5.1
+- cuda-0.7.5.2
 - equational-reasoning-0.4.1.1
 - ghc-typelits-natnormalise-0.4.6
 - ghc-typelits-presburger-0.1.1.0
