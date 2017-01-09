@@ -359,11 +359,13 @@ gSqNorm c = gSqNorm $ toDec' c
 -- implementation uses 'Double' precision to generate the Gaussian
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
-errorRounded :: (Tensor t, Fact m, TElt t z, Eq (TRep t z),
-                 Transcendental (TRep t Double), Ring (TRep t z),
-                 RealField (TRep t Double),
-                 FromIntegral (TRep t z) (TRep t Double),
-                 ToRational v, MonadRandom rnd) => v -> rnd (Cyc t m z)
+errorRounded
+    :: ( Tensor t, Fact m, TElt t z, Eq (TRep t z)
+       , Transcendental (TRep t Double), Ring (TRep t z)
+       , Round (TRep t Double) (TRep t z)
+       , ToRational v, MonadRandom rnd )
+    => v
+    -> rnd (Cyc t m z)
 {-# INLINABLE errorRounded #-}
 errorRounded = (Dec <$>) . U.errorRounded
 
@@ -373,11 +375,13 @@ errorRounded = (Dec <$>) . U.errorRounded
 -- implementation uses 'Double' precision to generate the Gaussian
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
-errorCoset ::
-  (Mod zp, z ~ ModRep zp, Lift zp z, Fact m, Transcendental (TRep t Double),
-   CElt t zp, ToRational v, MonadRandom rnd, Eq z, Ring z,
-   FromIntegral z v, FromIntegral z Double)
-  => v -> Cyc t m zp -> rnd (Cyc t m z)
+errorCoset
+    :: ( Mod zp, z ~ ModRep zp, Lift zp z, Fact m, Transcendental (TRep t Double)
+       , CElt t zp, ToRational v, MonadRandom rnd, Eq z
+       , Round Double z, FromIntegral z v, FromIntegral z Double )
+    => v
+    -> Cyc t m zp
+    -> rnd (Cyc t m z)
 errorCoset v = (Dec <$>) . U.errorCoset v . uncycDec
 {-# INLINABLE errorCoset #-}
 

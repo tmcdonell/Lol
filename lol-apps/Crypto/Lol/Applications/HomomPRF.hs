@@ -380,6 +380,7 @@ instance (ExtendLinIdx e r s e' r' s', -- tunnelInfoChain
           ZPP zp, ZPP (TRep t zp), TRep t (ZpOf zp) ~ ZpOf (TRep t zp), TElt t (ZpOf zp),    -- crtSet
           RealField (TRep t Double), Transcendental (TRep t Double),
           FromIntegral (TRep t (LiftOf zp)) (TRep t Double),
+          Round (TRep t Double) (TRep t (LiftOf zp)),
           Eq (TRep t (LiftOf zp)),
           Tunnel ('(s,s') ': rngs) t zp zq gad,       -- recursive call
           Protoable (TunnelInfo gad t e r s e' r' s' zp zq),
