@@ -21,15 +21,18 @@ import Crypto.Lol.Types
 import Data.Int
 import Data.Proxy
 
+import System.Environment
 import Test.Framework
 
 infixr 9 **
 data a ** b
 
 defaultTestMain :: _ => Proxy t -> IO ()
-defaultTestMain =
-  flip defaultMainWithArgs
-    ["--threads=1","--maximum-generated-tests=100"] . defaultTests
+defaultTestMain pt = do
+  argv <- getArgs
+  defaultMainWithArgs
+    (defaultTests pt)
+    ("--threads=1" : "--maximum-generated-tests=100" : argv)
 
 type family Zq (a :: k) :: * where
   Zq (a ** b) = (Zq a, Zq b)
@@ -109,3 +112,4 @@ type SmoothQ3 = 2150668801
 type SmoothZQ1 = Zq 2148249601
 type SmoothZQ2 = Zq (2148854401 ** 2148249601)
 type SmoothZQ3 = Zq (2148854401 ** 2148249601 ** 2150668801)
+
