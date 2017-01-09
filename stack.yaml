@@ -72,7 +72,7 @@ packages:
 
 - location:
     git:    https://github.com/tmcdonell/Lol-accelerate.git
-    commit: 0fe9e997ab02083ff9761bf43c49ac17c0189460
+    commit: 5c2f70e13c4d49763f8cf7bdab7c9fbef7f8e1d5
   extra-dep: true
 
 - location:
