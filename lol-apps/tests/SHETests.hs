@@ -11,61 +11,70 @@
 
 module SHETests (sheTests, decTest, modSwPTTest, ksTests, twemTests, tunnelTests) where
 
-import Crypto.Lol.Tests
-
 import Control.Applicative
 import Control.Monad
 import Control.Monad.Random
 
 import Crypto.Lol
 import Crypto.Lol.Applications.SymmSHE
+import Crypto.Lol.Tests
+import Crypto.Lol.Utils.ShowType
 
 import qualified Test.Framework as TF
 
-sheTests :: forall t m m' zp zq rnd . (MonadRandom rnd, _)
-  => Proxy '(m,m',zp,zq) -> Proxy t -> [rnd TF.Test]
+sheTests :: forall t m m' zp zq . (_)
+  => Proxy '(m,m',zp,zq) -> Proxy t -> TF.Test
 sheTests _ _ =
   let ptmr = Proxy::Proxy '(t,m,m',zp,zq)
-  in ($ ptmr) <$> [
+  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
    genTestArgs "DecU . Enc" prop_encDecU,
    genTestArgs "AddPub"     prop_addPub,
+   genTestArgs "MulScal"    prop_mulScal,
    genTestArgs "MulPub"     prop_mulPub,
    genTestArgs "ScalarPub"  prop_addScalar,
    genTestArgs "CTAdd"      prop_ctadd,
+   genTestArgs "CTAdd2"     prop_ctadd2,
    genTestArgs "CTMul"      prop_ctmul,
    genTestArgs "CT zero"    prop_ctzero,
    genTestArgs "CT one"     prop_ctone]
 
 -- zq must be liftable
-decTest :: forall t m m' zp zq rnd . (MonadRandom rnd, _)
-  => Proxy '(m,m',zp,zq) -> Proxy t -> [rnd TF.Test]
+decTest :: forall t m m' zp zq . (_)
+  => Proxy '(m,m',zp,zq) -> Proxy t -> TF.Test
 decTest _ _ =
-  [genTestArgs "Dec . Enc" prop_encDec (Proxy::Proxy '(t,m,m',zp,zq))]
+  let ptmr = Proxy::Proxy '(t,m,m',zp,zq)
+  in testGroupM (showType ptmr)
+       [genTestArgs "Dec . Enc" prop_encDec ptmr]
 
-modSwPTTest :: forall t m m' zp zp' zq rnd . (MonadRandom rnd, _)
-  => Proxy '(m,m',zp,zp',zq) -> Proxy t -> [rnd TF.Test]
+modSwPTTest :: forall t m m' zp zp' zq . (_)
+  => Proxy '(m,m',zp,zp',zq) -> Proxy t -> TF.Test
 modSwPTTest _ _ =
-  [genTestArgs "ModSwitch PT" prop_modSwPT (Proxy::Proxy '(t,m,m',zp,zp',zq))]
+  let ptmr = Proxy::Proxy '(t,m,m',zp,zp',zq)
+  in testGroupM (showType ptmr)
+       [genTestArgs "ModSwitch PT" prop_modSwPT ptmr]
 
-ksTests :: forall t m m' zp zq zq' gad rnd . (MonadRandom rnd, _)
-  => Proxy '(m,m',zp,zq,zq') -> Proxy gad -> Proxy t -> [rnd TF.Test]
+ksTests :: forall t m m' zp zq zq' gad . (_)
+  => Proxy '(m,m',zp,zq,zq') -> Proxy gad -> Proxy t -> TF.Test
 ksTests _ _ _ =
   let ptmr = Proxy::Proxy '(t,m,m',zp,zq,zq',gad)
-  in ($ ptmr) <$> [
+  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
     genTestArgs "KSLin" prop_ksLin,
     genTestArgs "KSQuad" prop_ksQuad]
 
-twemTests :: forall t r r' s s' zp zq rnd . (MonadRandom rnd, _)
-  => Proxy '(r,r',s,s',zp,zq) -> Proxy t -> [rnd TF.Test]
+twemTests :: forall t r r' s s' zp zq . (_)
+  => Proxy '(r,r',s,s',zp,zq) -> Proxy t -> TF.Test
 twemTests _ _ =
   let ptmr = Proxy::Proxy '(t,r,r',s,s',zp,zq)
-  in [genTestArgs "Embed" prop_ctembed ptmr,
+  in testGroupM (showType ptmr) [
+      genTestArgs "Embed" prop_ctembed ptmr,
       genTestArgs "Twace" prop_cttwace ptmr]
 
-tunnelTests :: forall t r r' s s' zp zq gad rnd . (MonadRandom rnd, _)
-  => Proxy '(r,r',s,s',zp,zq) -> Proxy gad -> Proxy t -> [rnd TF.Test]
+tunnelTests :: forall t r r' s s' zp zq gad . (_)
+  => Proxy '(r,r',s,s',zp,zq) -> Proxy gad -> Proxy t -> TF.Test
 tunnelTests _ _ _ =
-  [genTestArgs "Tunnel" prop_ringTunnel (Proxy::Proxy '(t,r,r',s,s',zp,zq,gad))]
+  let ptmr = Proxy::Proxy '(t,r,r',s,s',zp,zq,gad)
+  in testGroupM (showType ptmr)
+       [genTestArgs "Tunnel" prop_ringTunnel ptmr]
 
 
 
@@ -88,6 +97,17 @@ prop_addPub a pt sk = testIO $ do
   let ct' = addPublic a ct
       pt' = decryptUnrestricted sk ct'
   return $ pt' == (a+pt)
+
+prop_mulScal :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
+  => zp
+     -> PT (Cyc t m zp)
+     -> SK (Cyc t m' z)
+     -> Test '(t,m,m',zp,zq)
+prop_mulScal a pt sk = testIO $ do
+  ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
+  let ct' = mulScalar a ct
+      pt' = decryptUnrestricted sk ct'
+  return $ pt' == ((scalarCyc a) * pt)
 
 prop_mulPub :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => Cyc t m zp
@@ -117,6 +137,20 @@ prop_ctadd pt1 pt2 sk = testIO $ do
   ct1 :: CT m zp (Cyc t m' zq) <- encrypt sk pt1
   ct2 :: CT m zp (Cyc t m' zq) <- encrypt sk pt2
   let ct' = ct1 + ct2
+      pt' = decryptUnrestricted sk ct'
+  return $ pt1+pt2 == pt'
+
+-- tests adding with different scale values
+prop_ctadd2 :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
+  => PT (Cyc t m zp)
+     -> PT (Cyc t m zp)
+     -> SK (Cyc t m' z)
+     -> Test '(t,m,m',zp,zq)
+prop_ctadd2 pt1 pt2 sk = testIO $ do
+  ct1 :: CT m zp (Cyc t m' zq) <- encrypt sk pt1
+  ct2 :: CT m zp (Cyc t m' zq) <- encrypt sk pt2
+  -- no-op to induce unequal scale values
+  let ct' = ct1 + (modSwitchPT ct2)
       pt' = decryptUnrestricted sk ct'
   return $ pt1+pt2 == pt'
 

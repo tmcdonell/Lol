@@ -20,7 +20,6 @@ import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Cyclotomic.Tensor.Repa
 import Crypto.Lol.Factored
 import Crypto.Lol.Gadget
-import Crypto.Lol.Tests (testGroupM)
 import Crypto.Lol.Types
 
 import Data.Int
@@ -63,7 +62,7 @@ testOptions = do
 
 defaultTests :: _ => Proxy t -> Proxy gad -> [Test]
 defaultTests pt pgad  =
-  [testGroupM "SHE" $ concat $ ($ pt) <$> [
+  [testGroup "SHE" $ ($ pt) <$> [
     sheTests (Proxy::Proxy '(F7, F7, Zq 2,Zq (19393921 ** 18869761))),
     sheTests (Proxy::Proxy '(F7, F21,Zq 2,Zq (19393921 ** 18869761))),
     sheTests (Proxy::Proxy '(F2, F8, Zq 2,Zq 536871001)),
@@ -110,7 +109,7 @@ defaultTests pt pgad  =
     twemTests (Proxy::Proxy '(F1, F7, F3, F21, Zq 2, Zq 18869761)),
 
     tunnelTests (Proxy::Proxy '(F8,F40,F20,F60,Zq 4,Zq (18869761 ** 19393921))) pgad],
-  testGroupM "KHPRF" $ concat $ ($ pt) <$> [
+  testGroup "KHPRF" $ ($ pt) <$> [
     khprfTests (Proxy::Proxy '(F32, Zq 2, Zq 8, BaseBGad 2)),
     khprfTests (Proxy::Proxy '(F32, Zq 2, Zq 8, TrivGad)),
     khprfTests (Proxy::Proxy '(F32, Zq 32, Zq 257, BaseBGad 2))]
