@@ -32,7 +32,8 @@ import Data.Promotion.Prelude
 import Data.Time.Clock
 import Data.Typeable
 import MathObj.Matrix  (columns)
-import System.FilePath ((</>), pathSeparator)
+import System.Directory
+import System.FilePath ((</>))
 import System.IO
 import Text.Printf
 
@@ -41,10 +42,12 @@ import HomomPRFParams
 type T = CPP.CT
 type Z = Int64
 
-protoDir :: Int -> String -> String
-protoDir p = (((pathSeparator : "home") </> "eric" </> "Desktop" </> "Lol" </> ("p" ++ show p ++ "-")) ++)
+protoDir :: MonadIO m => Int -> String -> m String
+protoDir p d = liftIO $ do
+  base <- getAppUserDataDirectory "Lol"
+  return $ base </> printf "p%d-%s" p d
 
-lfuncPath, thintPath, rhintPath, tskPath, rskPath :: Int -> String
+lfuncPath, thintPath, rhintPath, tskPath, rskPath :: MonadIO m => Int -> m String
 thintPath p = protoDir p "tunnel.hint"
 rhintPath p = protoDir p "round.hint"
 lfuncPath p = protoDir p "tunnelfuncs.lfuns"
@@ -109,11 +112,11 @@ readHints :: forall mon t rngs z e zp zq zqs gad r' s' .
           SK Double (Cyc t r' z), SK Double (Cyc t s' z))
 readHints = do
   let p = fromIntegral $ proxy modulus (Proxy::Proxy zp)
-  lfuns  <- parseProtoFile $ lfuncPath p
-  tHints <- parseProtoFile $ thintPath p
-  rHints <- parseProtoFile $ rhintPath p
-  tsk    <- parseProtoFile $ tskPath p
-  rsk    <- parseProtoFile $ rskPath p
+  lfuns  <- parseProtoFile =<< lfuncPath p
+  tHints <- parseProtoFile =<< thintPath p
+  rHints <- parseProtoFile =<< rhintPath p
+  tsk    <- parseProtoFile =<< tskPath p
+  rsk    <- parseProtoFile =<< rskPath p
   return (lfuns, Hints tHints rHints, tsk, rsk)
 {-
 readOrGenHints :: (MonadIO mon, MonadRandom mon, Head RngList ~ '(r,r'), Last RngList ~ '(s,s'))
@@ -146,11 +149,11 @@ writeHints :: forall mon t rngs z e zp zq zqs gad r' s' .
   -> mon ()
 writeHints lfuns (Hints tHints rHints) encKey decKey = do
   let p = fromIntegral $ proxy modulus (Proxy::Proxy zp)
-  writeProtoFile (lfuncPath p) lfuns
-  writeProtoFile (thintPath p) tHints
-  writeProtoFile (rhintPath p) rHints
-  writeProtoFile (tskPath p) encKey
-  writeProtoFile (rskPath p) decKey
+  flip writeProtoFile lfuns  =<< lfuncPath p
+  flip writeProtoFile tHints =<< thintPath p
+  flip writeProtoFile rHints =<< rhintPath p
+  flip writeProtoFile encKey =<< tskPath p
+  flip writeProtoFile decKey =<< rskPath p
 
 -- timing functionality
 time :: (NFData a) => String -> a -> IO a

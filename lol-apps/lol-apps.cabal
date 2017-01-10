@@ -158,6 +158,7 @@ executable homomprf
     arithmoi,
     base,
     deepseq,
+    directory,
     DRBG,
     filepath,
     lol,
