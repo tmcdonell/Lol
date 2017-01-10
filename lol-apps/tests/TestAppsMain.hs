@@ -40,13 +40,26 @@ type family Zq (a :: k) :: * where
 
 main :: IO ()
 main = do
-  argv <- getArgs
-  let args = "--threads=1" : "--maximum-generated-tests=100" : argv
-  flip defaultMainWithArgs args $ concat
-    -- [ defaultTests (Proxy::Proxy CT) (Proxy::Proxy TrivGad)
-    -- , defaultTests (Proxy::Proxy RT) (Proxy::Proxy TrivGad)
-    [ defaultTests (Proxy::Proxy AT) (Proxy::Proxy TrivGad)
+  opts <- testOptions
+  flip defaultMainWithOpts opts
+    [ testGroup "CT" $ defaultTests (Proxy::Proxy CT) (Proxy::Proxy TrivGad)
+    , testGroup "RT" $ defaultTests (Proxy::Proxy RT) (Proxy::Proxy TrivGad)
+    , testGroup "AT" $ defaultTests (Proxy::Proxy AT) (Proxy::Proxy TrivGad)
     ]
+
+testOptions :: IO RunnerOptions
+testOptions = do
+  argv <- getArgs
+  let -- Filter out Accelerate debugging flags, otherwise test-framework complains
+      (before, r1)  = span (/= "+ACC") argv
+      (_,      r2)  = span (/= "-ACC") $ dropWhile (== "+ACC") r1
+      after         = dropWhile (== "-ACC") r2
+  --
+  mopts <- interpretArgs $ "--threads=1" : "--maximum-generated-tests=100" : before ++ after
+  case mopts of
+    Left err       -> error err
+    Right (opts,_) -> return opts
+
 
 defaultTests :: _ => Proxy t -> Proxy gad -> [Test]
 defaultTests pt pgad  =
