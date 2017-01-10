@@ -101,7 +101,7 @@ prop_addPub a pt sk = testIO $ do
 prop_mulScal :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => zp
      -> PT (Cyc t m zp)
-     -> SK (Cyc t m' z)
+     -> SK Double (Cyc t m' z)
      -> Test '(t,m,m',zp,zq)
 prop_mulScal a pt sk = testIO $ do
   ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
@@ -144,7 +144,7 @@ prop_ctadd pt1 pt2 sk = testIO $ do
 prop_ctadd2 :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => PT (Cyc t m zp)
      -> PT (Cyc t m zp)
-     -> SK (Cyc t m' z)
+     -> SK Double (Cyc t m' z)
      -> Test '(t,m,m',zp,zq)
 prop_ctadd2 pt1 pt2 sk = testIO $ do
   ct1 :: CT m zp (Cyc t m' zq) <- encrypt sk pt1
