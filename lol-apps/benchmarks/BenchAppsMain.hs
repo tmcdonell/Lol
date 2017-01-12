@@ -21,7 +21,7 @@ import Crypto.Lol.Applications.KeyHomomorphicPRF
 import Crypto.Lol.Applications.SymmSHE hiding (CT)
 import Crypto.Lol.Benchmarks
 import Crypto.Lol.Cyclotomic.Tensor.Accelerate
-import Crypto.Lol.Cyclotomic.Tensor.CPP
+--import Crypto.Lol.Cyclotomic.Tensor.CPP
 import Crypto.Lol.Utils.PrettyPrint.Table
 import Crypto.Lol.Types
 

@@ -15,13 +15,13 @@ import Control.Monad.State hiding (state)
 
 import Crypto.Lol
 import Crypto.Lol.Applications.KeyHomomorphicPRF
-import Crypto.Lol.Cyclotomic.Tensor.CPP
+import Crypto.Lol.Cyclotomic.Tensor.Accelerate
 import Crypto.Lol.Types
 
 import MathObj.Matrix hiding (zipWith)
 
 type Zq q = ZqBasic q Int64
-type Cyclo m q = Cyc CT m (Zq q)
+type Cyclo m q = Cyc AT m (Zq q)
 type Gad = BaseBGad 2
 type M = F128
 

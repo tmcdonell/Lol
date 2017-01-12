@@ -23,7 +23,8 @@ import Crypto.Lol hiding (lift)
 import Crypto.Lol.Applications.HomomPRF
 import Crypto.Lol.Applications.KeyHomomorphicPRF
 import Crypto.Lol.Applications.SymmSHE
-import Crypto.Lol.Cyclotomic.Tensor.CPP as CPP
+import Crypto.Lol.Cyclotomic.Tensor.Accelerate
+--import Crypto.Lol.Cyclotomic.Tensor.CPP as CPP
 import Crypto.Lol.Types.Proto
 import Crypto.Lol.Types.Random
 import Crypto.Random.DRBG
@@ -39,7 +40,7 @@ import Text.Printf
 
 import HomomPRFParams
 
-type T = CPP.CT
+type T = AT -- CPP.CT
 type Z = Int64
 
 protoDir :: MonadIO m => Int -> String -> m String
