@@ -25,6 +25,7 @@ import GHC.Fingerprint
 
 import Prelude hiding (length)
 import System.Directory
+import System.FilePath
 
 import Text.ProtocolBuffers        (messageGet, messagePut)
 import Text.ProtocolBuffers.Basic  (uToString, uFromString)
@@ -86,7 +87,9 @@ readProtoType file = do
 
 -- | Writes any auto-gen'd proto object to path/filename.
 writeProtoType :: (ReflectDescriptor a, Wire a) => FilePath -> a -> IO ()
-writeProtoType fileName = BS.writeFile fileName . messagePut
+writeProtoType fileName proto = do
+  createDirectoryIfMissing True (takeDirectory fileName)
+  BS.writeFile fileName (messagePut proto)
 
 parseProtoFile :: (ProtoReadable a, MonadIO m, MonadError String m)
   => FilePath -> m a

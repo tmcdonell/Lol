@@ -122,6 +122,7 @@ library
     data-default >= 0.3.0 && < 0.8,
     deepseq >= 1.4.1.1 && <1.5,
     directory,
+    filepath,
     monadcryptorandom,
     MonadRandom >= 0.2 && < 0.5,
     mtl >= 2.2.1 && < 2.3,
