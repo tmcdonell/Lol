@@ -1,3 +1,16 @@
+{-|
+Module      : KHPRFTests
+Description : Tests for KeyHomomorphicPRF.
+Copyright   : (c) Eric Crockett, 2011-2017
+                  Chris Peikert, 2011-2017
+License     : GPL-2
+Maintainer  : ecrockett0@email.com
+Stability   : experimental
+Portability : POSIX
+
+Tests for KeyHomomorphicPRF.
+-}
+
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE GADTs                 #-} -- needed for inferred TRep constraint
@@ -10,7 +23,7 @@
 module KHPRFTests (khprfTests) where
 
 import Control.Applicative
-import Control.Monad.Random
+import Control.Monad.Random hiding (lift)
 
 import Crypto.Lol
 import Crypto.Lol.Applications.KeyHomomorphicPRF
@@ -26,7 +39,7 @@ khprfTests :: forall t m zp zq gad . (_)
   => Proxy '(m,zp,zq,gad) -> Proxy t -> TF.Test
 khprfTests _ _ =
   let ptmr = Proxy::Proxy '(t,m,zp,zq,gad)
-  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
+  in testGroup (showType ptmr) $ ($ ptmr) <$> [
    genTestArgs "PRF_3bits" (prop_keyHomom 3),
    genTestArgs "PRF_5bits" (prop_keyHomom 5)]
 

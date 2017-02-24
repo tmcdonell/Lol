@@ -1,3 +1,16 @@
+{-|
+Module      : Crypto.Lol.Tests.ZqTests
+Description : Tests for modular arithmetic.
+Copyright   : (c) Eric Crockett, 2011-2017
+                  Chris Peikert, 2011-2017
+License     : GPL-2
+Maintainer  : ecrockett0@email.com
+Stability   : experimental
+Portability : POSIX
+
+Tests for modular arithmetic.
+-}
+
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -26,7 +39,7 @@ import qualified Test.Framework as TF
 
 -- | Tests for 'ZqBasic'
 zqTests :: _ => Proxy r -> TF.Test
-zqTests p = testGroupM (showType p) $ ($ p) <$> [
+zqTests p = testGroup (showType p) $ ($ p) <$> [
   genTestArgs "(+)" prop_add,
   genTestArgs "(*)" prop_mul,
   genTestArgs "^-1" prop_recip,

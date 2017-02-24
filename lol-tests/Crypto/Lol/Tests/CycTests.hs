@@ -1,3 +1,16 @@
+{-|
+Module      : Crypto.Lol.Tests.CycTests
+Description : Tests for the 'Cyc' interface.
+Copyright   : (c) Eric Crockett, 2011-2017
+                  Chris Peikert, 2011-2017
+License     : GPL-2
+Maintainer  : ecrockett0@email.com
+Stability   : experimental
+Portability : POSIX
+
+Tests for the 'Cyc' interface.
+-}
+
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
@@ -8,8 +21,6 @@
 {-# LANGUAGE TypeFamilies          #-}
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
-
--- | Tests for the 'Cyc' interface.
 
 module Crypto.Lol.Tests.CycTests where
 
@@ -27,7 +38,7 @@ import qualified Test.Framework as TF
 cycTests1 :: forall t m r . _ => Proxy '(m,r) -> Proxy t -> TF.Test
 cycTests1 _ _ =
   let ptmr = Proxy :: Proxy '(t,m,r)
-  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
+  in testGroup (showType ptmr) $ ($ ptmr) <$> [
       genTestArgs "mulGPow" prop_mulgPow,
       genTestArgs "mulGDec" prop_mulgDec,
       genTestArgs "mulGCRT" prop_mulgCRT
@@ -37,7 +48,7 @@ cycTests1 _ _ =
 cycTests2 :: forall t m m' r . _ => Proxy '(m,m',r) -> Proxy t -> TF.Test
 cycTests2 _ _ =
   let ptmr = Proxy :: Proxy '(t,m,m',r)
-  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
+  in testGroup (showType ptmr) $ ($ ptmr) <$> [
       genTestArgs "crtSet" prop_crtSet_pairs,
       genTestArgs "coeffsPow" prop_coeffsBasis
       ]

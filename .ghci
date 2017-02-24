@@ -7,6 +7,7 @@
 :set -ilol-cpp:lol-cpp/benchmarks:lol-cpp/tests
 :set -ilol-repa:lol-repa/benchmarks:lol-repa/tests
 :set -ilol-tests:lol-tests/exec
+:set -inumeric-prelude-accelerate
 
 :set -fprint-explicit-kinds
 :set -freduction-depth=200

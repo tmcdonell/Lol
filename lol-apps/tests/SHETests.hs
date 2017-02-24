@@ -1,3 +1,16 @@
+{-|
+Module      : SHETests
+Description : Tests for SymmSHE.
+Copyright   : (c) Eric Crockett, 2011-2017
+                  Chris Peikert, 2011-2017
+License     : GPL-2
+Maintainer  : ecrockett0@email.com
+Stability   : experimental
+Portability : POSIX
+
+Tests for SymmSHE.
+-}
+
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -26,12 +39,10 @@ sheTests :: forall t m m' zp zq . (_)
   => Proxy '(m,m',zp,zq) -> Proxy t -> TF.Test
 sheTests _ _ =
   let ptmr = Proxy::Proxy '(t,m,m',zp,zq)
-  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
+  in testGroup (showType ptmr) $ ($ ptmr) <$> [
    genTestArgs "DecU . Enc" prop_encDecU,
    genTestArgs "AddPub"     prop_addPub,
-   genTestArgs "MulScal"    prop_mulScal,
    genTestArgs "MulPub"     prop_mulPub,
-   genTestArgs "ScalarPub"  prop_addScalar,
    genTestArgs "CTAdd"      prop_ctadd,
    genTestArgs "CTAdd2"     prop_ctadd2,
    genTestArgs "CTMul"      prop_ctmul,
@@ -43,21 +54,21 @@ decTest :: forall t m m' zp zq . (_)
   => Proxy '(m,m',zp,zq) -> Proxy t -> TF.Test
 decTest _ _ =
   let ptmr = Proxy::Proxy '(t,m,m',zp,zq)
-  in testGroupM (showType ptmr)
+  in testGroup (showType ptmr)
        [genTestArgs "Dec . Enc" prop_encDec ptmr]
 
 modSwPTTest :: forall t m m' zp zp' zq . (_)
   => Proxy '(m,m',zp,zp',zq) -> Proxy t -> TF.Test
 modSwPTTest _ _ =
   let ptmr = Proxy::Proxy '(t,m,m',zp,zp',zq)
-  in testGroupM (showType ptmr)
+  in testGroup (showType ptmr)
        [genTestArgs "ModSwitch PT" prop_modSwPT ptmr]
 
 ksTests :: forall t m m' zp zq zq' gad . (_)
   => Proxy '(m,m',zp,zq,zq') -> Proxy gad -> Proxy t -> TF.Test
 ksTests _ _ _ =
   let ptmr = Proxy::Proxy '(t,m,m',zp,zq,zq',gad)
-  in testGroupM (showType ptmr) $ ($ ptmr) <$> [
+  in testGroup (showType ptmr) $ ($ ptmr) <$> [
     genTestArgs "KSLin" prop_ksLin,
     genTestArgs "KSQuad" prop_ksQuad]
 
@@ -65,7 +76,7 @@ twemTests :: forall t r r' s s' zp zq . (_)
   => Proxy '(r,r',s,s',zp,zq) -> Proxy t -> TF.Test
 twemTests _ _ =
   let ptmr = Proxy::Proxy '(t,r,r',s,s',zp,zq)
-  in testGroupM (showType ptmr) [
+  in testGroup (showType ptmr) [
       genTestArgs "Embed" prop_ctembed ptmr,
       genTestArgs "Twace" prop_cttwace ptmr]
 
@@ -73,7 +84,7 @@ tunnelTests :: forall t r r' s s' zp zq gad . (_)
   => Proxy '(r,r',s,s',zp,zq) -> Proxy gad -> Proxy t -> TF.Test
 tunnelTests _ _ _ =
   let ptmr = Proxy::Proxy '(t,r,r',s,s',zp,zq,gad)
-  in testGroupM (showType ptmr)
+  in testGroup (showType ptmr)
        [genTestArgs "Tunnel" prop_ringTunnel ptmr]
 
 
@@ -98,17 +109,6 @@ prop_addPub a pt sk = testIO $ do
       pt' = decryptUnrestricted sk ct'
   return $ pt' == (a+pt)
 
-prop_mulScal :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
-  => zp
-     -> PT (Cyc t m zp)
-     -> SK Double (Cyc t m' z)
-     -> Test '(t,m,m',zp,zq)
-prop_mulScal a pt sk = testIO $ do
-  ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
-  let ct' = mulScalar a ct
-      pt' = decryptUnrestricted sk ct'
-  return $ pt' == ((scalarCyc a) * pt)
-
 prop_mulPub :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => Cyc t m zp
      -> PT (Cyc t m zp)
@@ -119,14 +119,6 @@ prop_mulPub a pt sk = testIO $ do
   let ct' = mulPublic a ct
       pt' = decryptUnrestricted sk ct'
   return $ pt' == (a*pt)
-
-prop_addScalar :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
-  => zp -> PT (Cyc t m zp) -> SK Double (Cyc t m' z) -> Test '(t,m,m',zp,zq)
-prop_addScalar c pt sk = testIO $ do
-  ct :: CT m zp (Cyc t m' zq) <- encrypt sk pt
-  let ct' = addScalar c ct
-      pt' = decryptUnrestricted sk ct'
-  return $ pt' == ((scalarCyc c)+pt)
 
 prop_ctadd :: forall t m m' z zp zq . (z ~ LiftOf zp, _)
   => PT (Cyc t m zp)
