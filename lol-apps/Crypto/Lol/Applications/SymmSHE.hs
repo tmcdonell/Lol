@@ -113,7 +113,13 @@ instance (NFData r) => NFData (SK v r) where
 
 -- | Constraint synonym for generating a secret key.
 type GenSKCtx t m z v =
-  (ToInteger z, Fact m, CElt t z, Eq (TRep t z), FromIntegral (TRep t z) (TRep t Double), Transcendental (TRep t Double), RealField (TRep t Double), ToRational v, NFData v)
+  ( ToInteger z, Fact m, CElt t z, Eq (TRep t z)
+  , FromIntegral (TRep t z) (TRep t Double)
+  , Round (TRep t Double) (TRep t z)
+  , Transcendental (TRep t Double)
+  , RealField (TRep t Double)
+  , ToRational v, NFData v
+  )
 
 -- | Generates a secret key with (index-independent) scaled variance
 -- parameter \( v \); see 'errorRounded'.
@@ -123,8 +129,11 @@ genSK v = liftM (SK v) $ errorRounded v
 
 -- | Generates a secret key with the same scaled variance
 -- as the input secret key.
-genSKWithVar :: (ToInteger z, Eq (TRep t z), FromIntegral (TRep t z) (TRep t Double), Transcendental (TRep t Double), RealField (TRep t Double), Fact m, CElt t z, MonadRandom rnd)
-             => SK v r -> rnd (SK v (Cyc t m z))
+genSKWithVar :: ( ToInteger z, Eq (TRep t z), FromIntegral (TRep t z) (TRep t Double)
+       , Transcendental (TRep t Double), RealField (TRep t Double)
+       , Round (TRep t Double) (TRep t z)
+       , Fact m, CElt t z, MonadRandom rnd )
+  => SK v r -> rnd (SK v (Cyc t m z))
 genSKWithVar (SK v _) = genSK v
 
 -- | Constraint synonym for encryption.
@@ -135,7 +144,8 @@ type EncryptCtx t m m' z zp zq v =
    m `Divides` m', Eq (ModRep zp),
    Reduce (ModRep zp) zq, Reduce (TRep t (ModRep zp)) (TRep t zq),
    Transcendental (TRep t Double),
-   FromIntegral (ModRep zp) v, FromIntegral (ModRep zp) Double)
+   FromIntegral (ModRep zp) v, FromIntegral (ModRep zp) Double,
+   Round (TRep t Double) (TRep t z), Round Double (ModRep zp))
 
 -- | Encrypt a plaintext under a secret key.
 encrypt :: forall t m m' z zp zq rnd v .
@@ -266,9 +276,10 @@ modSwitchPT ct = let CT MSD k l c = toMSD ct in
 
 -- | Constraint synonym for generating a ring-LWE sample.
 type LWECtx t m' z zq =
-  (ToInteger z, Reduce z zq, Reduce (TRep t z) (TRep t zq), Ring zq, Random zq,
-   Fact m', CElt t z, CElt t zq, Eq (TRep t z), Transcendental (TRep t Double),
-   RealField (TRep t Double), FromIntegral (TRep t z) (TRep t Double))
+  (ToInteger z, Reduce z zq, Reduce (TRep t z) (TRep t zq), Ring zq, Random zq
+  , Fact m', CElt t z, CElt t zq, Eq (TRep t z), Transcendental (TRep t Double)
+  , RealField (TRep t Double), FromIntegral (TRep t z) (TRep t Double)
+  , Round (TRep t Double) (TRep t z))
 
 -- An LWE sample for a given secret (corresponding to a linear
 -- ciphertext encrypting 0 in MSD form)
