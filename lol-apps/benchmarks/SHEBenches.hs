@@ -135,7 +135,7 @@ bench_tunnel :: forall t e e' r r' s s' z zp zq gad .
    r `Divides` r',
    Fact e,
    NFData zp,
-   CElt t (ZpOf zp), FromIntegral z Double,
+   CElt t (ZpOf zp), FromIntegral z Double, Round Double z,
    ZPP (TRep t zp), TRep t (ZpOf zp) ~ ZpOf (TRep t zp))
   => PT (Cyc t r zp) -> SK Double (Cyc t r' z) -> SK Double (Cyc t s' z) -> Bench '(t,r,r',s,s',zp,zq,gad)
 bench_tunnel pt skin skout = benchM $ do

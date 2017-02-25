@@ -424,12 +424,13 @@ tGaussian = fmap Dec . tGaussianDec
 -- implementation uses 'Double' precision to generate the Gaussian
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
-errorRounded :: forall v rnd t m z .
-                (Tensor t, Fact m, TElt t z, Ring (TRep t z),
-                 ToRational v, MonadRandom rnd, Transcendental (TRep t Double),
-                 Eq (TRep t z), RealField (TRep t Double),
-                 FromIntegral (TRep t z) (TRep t Double))
-                => v -> rnd (UCyc t m D z)
+errorRounded
+    :: forall v rnd t m z.
+       ( Tensor t, Fact m, TElt t z, Ring (TRep t z), ToRational v
+       , MonadRandom rnd, Transcendental (TRep t Double)
+       , Round (TRep t Double) (TRep t z) )
+    => v
+    -> rnd (UCyc t m D z)
 {-# INLINABLE errorRounded #-}
 errorRounded svar =
   Dec . fmapT (roundMult one) <$> (tGaussianDec svar :: rnd (t m Double))
@@ -440,11 +441,14 @@ errorRounded svar =
 -- implementation uses 'Double' precision to generate the Gaussian
 -- sample, which may not be sufficient for rigorous proof-based
 -- security.)
-errorCoset :: forall t m zp z v rnd .
-  (Mod zp, z ~ ModRep zp, Lift zp z, Tensor t, Fact m,
-   ToRational v, MonadRandom rnd, Eq z, Ring z, FromIntegral z Double,
-   FromIntegral z v, Transcendental (TRep t Double))
-  => v -> UCyc t m D zp -> rnd (UCyc t m D z)
+errorCoset
+    :: forall t m zp z v rnd.
+       ( Mod zp, z ~ ModRep zp, Lift zp z, Tensor t, Fact m, ToRational v
+       , MonadRandom rnd, Eq z, FromIntegral z v, FromIntegral z Double
+       , Round Double z, Transcendental (TRep t Double) )
+  => v
+  -> UCyc t m D zp
+  -> rnd (UCyc t m D z)
 {-# INLINABLE errorCoset #-}
 errorCoset =
   let pval = fromIntegral' $ proxy modulus (Proxy::Proxy zp)

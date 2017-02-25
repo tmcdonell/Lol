@@ -70,7 +70,7 @@ instance (Random a) => Random (Complex a) where
     randomR = error "randomR not defined for (Complex t)"
 
 -- | Rounds the real and imaginary components to the nearest integer.
-roundComplex :: (RealRing a, ToInteger b) => Complex a -> (b,b)
+roundComplex :: Round a b => Complex a -> (b,b)
 roundComplex (Complex x) = (round $ C.real x, round $ C.imag x)
 
 -- | 'cis' \(t\) is a complex value with magnitude 1 and phase \(t \bmod 2\cdot\pi\)).

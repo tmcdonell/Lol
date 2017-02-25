@@ -62,3 +62,4 @@ prop_keyHomom size = testIO $ do
       c = concat $ rows $ a - b
       c' = map (maximum . fmapPow abs . lift) c :: [LiftOf zp]
   return $ maximum c' <= 1
+

@@ -35,7 +35,8 @@ type RLWECtx t m zq =
   (Fact m, Ring zq, Lift' (TRep t zq), ToInteger (LiftOf zq), Transcendental (TRep t Double),
    CElt t zq, CElt t (LiftOf zq), Eq (TRep t (LiftOf zq)), RealField (TRep t Double),
    LiftOf (TRep t zq) ~ TRep t (LiftOf zq), Reduce (TRep t (LiftOf zq)) (TRep t zq),
-   Reduce (LiftOf zq) zq, Lift' zq, FromIntegral (TRep t (LiftOf zq)) (TRep t Double))
+   Reduce (LiftOf zq) zq, Lift' zq, FromIntegral (TRep t (LiftOf zq)) (TRep t Double),
+   Round (TRep t Double) (TRep t (LiftOf zq)))
 
 -- | A discrete RLWE sample with the given scaled variance and secret.
 sample :: forall rnd v t m zq .

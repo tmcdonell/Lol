@@ -139,6 +139,7 @@ executable homomprf
     base >= 4.9 && < 5,
     deepseq < 1.5,
     DRBG < 0.6,
+    directory < 1.4,
     filepath < 1.5,
     lol >= 0.6.0.0 && < 0.7,
     lol-accelerate,

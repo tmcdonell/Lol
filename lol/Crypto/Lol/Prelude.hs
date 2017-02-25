@@ -153,8 +153,9 @@ rescaleMod =
              in fromIntegral quot'
 
 -- | Deterministically round to a nearby value in the desired coset.
-roundCoset :: forall zp z r .
-              (Mod zp, Eq z, Ring z, z ~ ModRep zp, Lift zp z, RealField r, FromIntegral z r) => zp -> r -> z
+roundCoset
+    :: forall zp z r . (Mod zp, Eq z, z ~ ModRep zp, Lift zp z, RealField r, FromIntegral z r, Round r z)
+    => zp -> r -> z
 {-# INLINABLE roundCoset #-}
 roundCoset = let pval = proxy modulus (Proxy::Proxy zp)
              in \ zp x -> let rep = lift zp

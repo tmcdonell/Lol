@@ -15,6 +15,7 @@ and defines saner versions of some NumericPrelude functions.
 
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DefaultSignatures     #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -61,6 +62,7 @@ import           MathObj.Matrix               hiding (one, zero)
 import           MathObj.Polynomial
 
 import Data.Int (Int64)
+import Data.Word (Word64)
 
 -- | The Prelude definition of 'Prelude.max'.
 max :: Ord a => a -> a -> a
@@ -154,9 +156,13 @@ type Matrix a = MathObj.Matrix.T a
 
 class FromIntegral a b where
   fromIntegral' :: a -> b
-
-instance FromIntegral Int64 Double where
+  default fromIntegral' :: (ToInteger a, Ring b) => a -> b
   fromIntegral' = fromIntegral
+
+instance FromIntegral Int Double
+instance FromIntegral Int64 Double
+instance FromIntegral Word64 Double
+instance FromIntegral Integer Double
 
 -- 'IntegralDomain' instance for 'Double'
 instance Algebra.IntegralDomain.C Double where
@@ -211,17 +217,28 @@ decomp [] v = [v]
 decomp (b:bs) v = let (q,r) = v `divModCent` b
                   in r : decomp bs q
 
--- | This function rounds to the closest integer. For fraction x == 0.5
--- it rounds away from zero. This function is not the result of an ingenious
--- mathematical insight, but is simply a kind of rounding that is the fastest
--- on IEEE floating point architectures.
-round :: (RealRing a, Ring b) => a -> b
-round = Algebra.RealRing.roundSimple
+class Round a b where
+  -- | Round to the nearest integer away from zero.
+  --
+  -- >>> round (0.5 :: Double) :: Int
+  -- 1
+  --
+  -- >>> round (-0.5 :: Double) :: Int
+  -- -1
+  round     :: a -> b
+  default round :: (RealRing a, Ring b) => a -> b
+  round = Algebra.RealRing.roundSimple
 
--- | Deterministically round to the nearest multiple of \( i \).
-roundMult :: (RealField r, Eq i, FromIntegral i r, Ring i) => i -> r -> i
-roundMult 1 r  = round r
-roundMult i r = let r' = r / fromIntegral' i in i * round r'
+  -- | Round to the nearest multiple of the first argument, away from zero.
+  roundMult :: b -> a -> b
+  default roundMult :: (RealField a, Eq b, FromIntegral b a, Ring b) => b -> a -> b
+  roundMult 1 r = round r
+  roundMult i r = let r' = r / fromIntegral' i in i * round r'
+
+instance Round Double Int
+instance Round Double Int64
+instance Round Double Word64
+instance Round Double Integer
 
 -- | Randomly round to the nearest larger or smaller multiple of \( i \),
 -- where the round-off term has expectation zero.
