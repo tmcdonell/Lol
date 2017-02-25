@@ -12,11 +12,7 @@ This module depends on all source code modules, so it is useful for checking
 that all code compiles, including all top-level executables.
 -}
 
-import SHEMain ()
-import KHPRFMain ()
-import HomomPRFMain ()
-import TestAppsMain ()
-import BenchAppsMain ()
+
 import LolTestsMain ()
 
 -- EAC: This doesn't compile because RRq is missing a CRTrans instance, or at
@@ -24,8 +20,18 @@ import LolTestsMain ()
 -- can we disassociate CRTIndex from the class and still get rlwe-challenges to compile?
 --import RLWEChallengesMain ()
 
-import BenchCPPMain ()
-import TestCPPMain ()
+import BenchLolCPPMain ()
+import BenchAppsCPPMain ()
+import TestLolCPPMain ()
+import TestAppsCPPMain ()
+import HomomPRFCPPMain ()
+import KHPRFCPPMain ()
+import SHECPPMain ()
 
-import BenchRepaMain ()
-import TestRepaMain ()
+import BenchLolRepaMain ()
+import BenchAppsRepaMain ()
+import TestLolRepaMain ()
+import TestAppsRepaMain ()
+import HomomPRFRepaMain ()
+import KHPRFRepaMain ()
+import SHERepaMain ()
