@@ -1,3 +1,6 @@
+
+[![Build Status](https://travis-ci.org/cpeikert/Lol.svg?branch=tmcdonell-acctensor)](https://travis-ci.org/cpeikert/Lol)
+
 Relative to master, this branch (tmcdonell-acctensor) modifies Lol to support Trevor's Accelerate backend. The
 approach taken here is essentially Trevor's original approach. Unfortunately,
 the result is a mess, with changes affecting top-level code. This is not a candidate
