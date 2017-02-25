@@ -50,15 +50,9 @@ all imported files from the lol ecosystem from source.
 
 You can load all top-level executables with `./ghci AllMain.hs`.
 
-<<<<<<< HEAD
 
 Installing Lol:
 
-=======
-
-Installing Lol:
-
->>>>>>> tmcdonell-acctensor
 If you want to run benchmarks or tests, you'll need to compile the ecosystem
 with optimizations. The easiest way to do this is to use stack, which is
 included in the [Haskell Platform](https://www.haskell.org/platform/).
