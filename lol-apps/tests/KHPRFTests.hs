@@ -1,3 +1,16 @@
+{-|
+Module      : KHPRFTests
+Description : Tests for KeyHomomorphicPRF.
+Copyright   : (c) Eric Crockett, 2011-2017
+                  Chris Peikert, 2011-2017
+License     : GPL-2
+Maintainer  : ecrockett0@email.com
+Stability   : experimental
+Portability : POSIX
+
+Tests for KeyHomomorphicPRF.
+-}
+
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE GADTs                 #-} -- needed for inferred TRep constraint
@@ -10,7 +23,7 @@
 module KHPRFTests (khprfTests) where
 
 import Control.Applicative
-import Control.Monad.Random
+import Control.Monad.Random hiding (lift)
 
 import Crypto.Lol
 import Crypto.Lol.Applications.KeyHomomorphicPRF

@@ -1,16 +1,15 @@
 
-resolver: lts-7.16
-compiler: ghc-8.0.2
+resolver: lts-8.2
 
 packages:
-- compiler
+#- fhe-compiler
 - lol
 - lol-apps
 - lol-benches
 - lol-cpp
 - lol-repa
 - lol-tests
-- rlwe-challenges
+#- rlwe-challenges
 
 - location:
     git:    https://github.com/AccelerateHS/accelerate.git
@@ -43,7 +42,7 @@ packages:
 
 - location:
     git:    https://github.com/tmcdonell/Lol-accelerate.git
-    commit: 09b35ebc786cbc335b157af82639f9a85948d97d
+    commit: d5adbbf535dc44430f6f824d31f90f9ae7559c59
   extra-dep: true
 
 - location:
