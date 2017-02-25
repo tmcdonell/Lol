@@ -1,13 +1,9 @@
 
-[![Build Status](https://travis-ci.org/cpeikert/Lol.svg?branch=acctensor)](https://travis-ci.org/cpeikert/Lol)
+[![Build Status](https://travis-ci.org/cpeikert/Lol.svg?branch=lol-apps-exec-lib)](https://travis-ci.org/cpeikert/Lol)
 
-Relative to master, this branch (acctensor) modifies Lol to support Trevor's Accelerate backend. The
-approach taken here is essentially Trevor's original approach. Unfortunately,
-the result is a mess, with changes affecting top-level code. This is not a candidate
-for merging at this time, but it is a compiling branch that can help us evaluate
-the viability of AccTensor. Note that we cannot build rlwe-challenges at this time
-because RRq does not have a CRTrans instance, but we need a CRTIndex type family
-instance for RRq.
+Relative to master, this branch (lol-apps-exec-lib) turns the lol-apps tests,
+benchmarks, and examples into tensor-polymorphic libraries. This allows individual
+tensor to instantiate the lol-apps executables.
 
 --------------------------------------------------------------------------------
 

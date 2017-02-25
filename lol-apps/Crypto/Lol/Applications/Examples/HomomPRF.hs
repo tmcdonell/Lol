@@ -1,5 +1,5 @@
 {-|
-Module      : HomomPRFMain
+Module      : Crypto.Lol.Applications.Examples.HomomPRF
 Description : Example, test, and macro-benchmark for homomorphic evaluation of a PRF.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
@@ -22,7 +22,7 @@ Example, test, and macro-benchmark for homomorphic evaluation of a PRF.
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module HomomPRFMain where
+module Crypto.Lol.Applications.Examples.HomomPRF (homomPRFMain) where
 
 import Control.DeepSeq
 import Control.Monad.Except
@@ -34,8 +34,6 @@ import Crypto.Lol hiding (lift)
 import Crypto.Lol.Applications.HomomPRF
 import Crypto.Lol.Applications.KeyHomomorphicPRF
 import Crypto.Lol.Applications.SymmSHE
-import Crypto.Lol.Cyclotomic.Tensor.Accelerate
---import Crypto.Lol.Cyclotomic.Tensor.CPP as CPP
 import Crypto.Lol.Types.Proto
 import Crypto.Lol.Types.Random
 import Crypto.Random.DRBG
@@ -49,9 +47,8 @@ import System.FilePath ((</>))
 import System.IO
 import Text.Printf
 
-import HomomPRFParams
+import Crypto.Lol.Applications.Examples.HomomPRFParams
 
-type T = AT -- CPP.CT
 type Z = Int64
 
 protoDir :: MonadIO m => Int -> String -> m String
@@ -74,11 +71,11 @@ rskPath   p = protoDir p "decKey.secret"
 -- PRF evaluation usually goes from R' to R. Homomorphic evaluation
 -- goes from R' to S, via S'. To test, we run the computation in the clear
 -- from R' to R, then tunnel in the clear to S.
-main :: IO ()
-main = do
-  putStrLn $ "Starting homomorphic PRF evaluation with tensor " ++ show (typeRep (Proxy::Proxy T))
+homomPRFMain :: forall t . (_) => Proxy t -> IO ()
+homomPRFMain pt = do
+  putStrLn $ "Starting homomorphic PRF evaluation with tensor " ++ show (typeRep pt)
   hints' <- runExceptT readHints
-  (lfuns, hints :: EvalHints T RngList Z ZP ZQ ZQSeq KSGad, encKey, decKey) <- case hints' of
+  (lfuns, hints :: EvalHints t RngList Z ZP ZQ ZQSeq KSGad, encKey, decKey) <- case hints' of
     (Right a) -> do
       putStrLn "Using precomputed hints."
       return a

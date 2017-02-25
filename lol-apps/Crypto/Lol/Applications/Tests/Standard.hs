@@ -1,6 +1,6 @@
 {-|
-Module      : TestAppsMain
-Description : Main driver for lol-apps tests.
+Module      : Crypto.Lol.Applications.Tests.Standard
+Description : Standard tests for lol-apps.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
 License     : GPL-2
@@ -8,7 +8,7 @@ Maintainer  : ecrockett0@email.com
 Stability   : experimental
 Portability : POSIX
 
-Main driver for lol-apps tests.
+Mostly-monomorphized tests for lol-apps.
 -}
 
 {-# LANGUAGE DataKinds             #-}
@@ -22,15 +22,14 @@ Main driver for lol-apps tests.
 
 {-# OPTIONS_GHC -fno-warn-partial-type-signatures #-}
 
-module TestAppsMain where
+module Crypto.Lol.Applications.Tests.Standard (defaultTests) where
 
 import Control.Monad.Random
 
 import Crypto.Lol (Cyc)
-import Crypto.Lol.Applications.SymmSHE hiding (CT)
-import Crypto.Lol.Cyclotomic.Tensor.Accelerate
-import Crypto.Lol.Cyclotomic.Tensor.CPP
-import Crypto.Lol.Cyclotomic.Tensor.Repa
+import Crypto.Lol.Applications.SymmSHE
+import Crypto.Lol.Applications.Tests.KHPRFTests
+import Crypto.Lol.Applications.Tests.SHETests
 import Crypto.Lol.Factored
 import Crypto.Lol.Gadget
 import Crypto.Lol.Types
@@ -39,8 +38,6 @@ import Data.Int
 import Data.Proxy
 import System.Environment
 
-import KHPRFTests
-import SHETests
 import Test.Framework
 
 infixr 9 **
@@ -49,29 +46,6 @@ data a ** b
 type family Zq (a :: k) :: * where
   Zq (a ** b) = (Zq a, Zq b)
   Zq q = (ZqBasic q Int64)
-
-main :: IO ()
-main = do
-  opts <- testOptions
-  flip defaultMainWithOpts opts
-    [ testGroup "CT" $ defaultTests (Proxy::Proxy CT) (Proxy::Proxy TrivGad)
-    , testGroup "RT" $ defaultTests (Proxy::Proxy RT) (Proxy::Proxy TrivGad)
-    , testGroup "AT" $ defaultTests (Proxy::Proxy AT) (Proxy::Proxy TrivGad)
-    ]
-
-testOptions :: IO RunnerOptions
-testOptions = do
-  argv <- getArgs
-  let -- Filter out Accelerate debugging flags, otherwise test-framework complains
-      (before, r1)  = span (/= "+ACC") argv
-      (_,      r2)  = span (/= "-ACC") $ dropWhile (== "+ACC") r1
-      after         = dropWhile (== "-ACC") r2
-  --
-  mopts <- interpretArgs $ "--threads=1" : "--maximum-generated-tests=100" : before ++ after
-  case mopts of
-    Left err       -> error err
-    Right (opts,_) -> return opts
-
 
 defaultTests :: _ => Proxy t -> Proxy gad -> [Test]
 defaultTests pt pgad  =
