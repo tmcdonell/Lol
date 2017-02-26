@@ -92,6 +92,7 @@ library
     split < 0.3,
 
     DRBG,
+    directory,
     filepath,
     lol-benches,
     lol-tests,

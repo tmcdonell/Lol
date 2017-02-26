@@ -36,7 +36,6 @@ import Crypto.Lol.Types
 
 import Data.Int
 import Data.Proxy
-import System.Environment
 
 import Test.Framework
 
