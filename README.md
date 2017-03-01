@@ -1,9 +1,13 @@
-This branch (acctensor) is up-to-date with split-packages. Relative to
-split-packages, it modifies Lol to support Trevor's Accelerate backend. The
+
+[![Build Status](https://travis-ci.org/cpeikert/Lol.svg?branch=tmcdonell-acctensor)](https://travis-ci.org/cpeikert/Lol)
+
+Relative to master, this branch (tmcdonell-acctensor) modifies Lol to support Trevor's Accelerate backend. The
 approach taken here is essentially Trevor's original approach. Unfortunately,
 the result is a mess, with changes affecting top-level code. This is not a candidate
 for merging at this time, but it is a compiling branch that can help us evaluate
-the viability of AccTensor.
+the viability of AccTensor. Note that we cannot build rlwe-challenges at this time
+because RRq does not have a CRTrans instance, but we need a CRTIndex type family
+instance for RRq.
 
 --------------------------------------------------------------------------------
 
@@ -32,32 +36,41 @@ This repository contains several Haskell libraries:
     lol-apps to transform plaintext descriptions of algorithms into
     their homomorphic counterparts.
 
-Installing lol:
+Developing in the lol ecosystem:
+Compiling the lol ecosystem takes a long time. If you are just doing development,
+you probably don't need to compile (with optimizations) the ecosystem. Instead,
+you can develop interactively. Run
+```
+> stack build lol lol-cpp lol-repa lol-tests lol-benches rlwe-challenges lol-apps --dependencies-only
+```
+to build all third-party dependencies of the lol ecosystem, then you can
+develop with
+```
+> ./ghci path/to/file
+```
+This command builds the C++ library for `lol-cpp` and the loads
+all imported files from the lol ecosystem from source.
 
-The easiest way to install Lol is to use stack, which is included in
-the [Haskell Platform](https://www.haskell.org/platform/).
+You can load all top-level executables with `./ghci AllMain.hs`.
+
+
+Installing Lol:
+
+If you want to run benchmarks or tests, you'll need to compile the ecosystem
+with optimizations. The easiest way to do this is to use stack, which is
+included in the [Haskell Platform](https://www.haskell.org/platform/).
 ```
 > stack setup
-> stack install lol
+> stack build lol
 ```
-You can run unit tests with `stack test lol`. You can run
-microbenchmarks with `stack bench lol`. You can configure the
-benchmarks by editing `lol/benchmarks/BenchConfig.hs`.
-
-Installing lol-apps:
+or
 ```
+> stack setup
 > stack install lol-apps
 ```
-You can run unit tests with `stack test lol-apps`. You can run
-benchmarks with `stack bench lol-apps`. An example of how to use each
-application is included and is built automatically when you install
+You can run unit tests with `stack test <package>`. You can run microbenchmarks with `stack bench <package>`. Currently `lol-cpp`, `lol-repa`, and `lol-apps`
+have tests and benchmarks.
+
+The `lol-apps` package includes examples of how to use each
+application. These are built automatically when you install
 lol-apps.
-
-Developing in the lol ecosystem:
-
-./ghci path/to/file
-
-This command builds the C++ library for lol-cpp and the loads
-all imported files from lol* packages from source. You may
-need to run 'stack bench lol-cpp' or similar first to install
-the necessary dependencies.
