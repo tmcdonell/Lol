@@ -3,7 +3,7 @@ Module      : SHERepaMain
 Description : Example using SymmSHE with RT.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
-License     : GPL-2
+License     : GPL-3
 Maintainer  : ecrockett0@email.com
 Stability   : experimental
 Portability : POSIX
@@ -11,22 +11,11 @@ Portability : POSIX
 Example using SymmSHE with RT.
 -}
 
-{-# LANGUAGE CPP #-}
-
 module SHERepaMain where
 
-#ifdef WITH_APPS
-
 import Crypto.Lol.Cyclotomic.Tensor.Repa
-import Crypto.Lol.Applications.Examples.SymmSHE
+import Crypto.Lol.Applications.Examples
 import Data.Proxy
 
 main :: IO ()
 main = sheMain (Proxy::Proxy RT)
-
-#else
-
-main :: IO ()
-main = return ()
-
-#endif

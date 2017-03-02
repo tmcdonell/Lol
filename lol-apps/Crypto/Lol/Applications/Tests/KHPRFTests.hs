@@ -3,7 +3,7 @@ Module      : Crypto.Lol.Applications.Tests.KHPRFTests
 Description : Tests for KeyHomomorphicPRF.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
-License     : GPL-2
+License     : GPL-3
 Maintainer  : ecrockett0@email.com
 Stability   : experimental
 Portability : POSIX
@@ -29,7 +29,6 @@ import Crypto.Lol
 import Crypto.Lol.Applications.KeyHomomorphicPRF
 import Crypto.Lol.Cyclotomic.UCyc
 import Crypto.Lol.Tests
-import Crypto.Lol.Utils.ShowType
 
 import MathObj.Matrix
 

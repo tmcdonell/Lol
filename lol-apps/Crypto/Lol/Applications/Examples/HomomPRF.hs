@@ -3,7 +3,7 @@ Module      : Crypto.Lol.Applications.Examples.HomomPRF
 Description : Example, test, and macro-benchmark for homomorphic evaluation of a PRF.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
-License     : GPL-2
+License     : GPL-3
 Maintainer  : ecrockett0@email.com
 Stability   : experimental
 Portability : POSIX
@@ -16,6 +16,7 @@ Example, test, and macro-benchmark for homomorphic evaluation of a PRF.
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE PolyKinds             #-}
 {-# LANGUAGE RebindableSyntax      #-}
+{-# LANGUAGE RecordWildCards       #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
@@ -24,6 +25,7 @@ Example, test, and macro-benchmark for homomorphic evaluation of a PRF.
 
 module Crypto.Lol.Applications.Examples.HomomPRF (homomPRFMain) where
 
+import Control.Applicative
 import Control.DeepSeq
 import Control.Monad.Except
 import Control.Monad.Random
@@ -42,7 +44,7 @@ import Data.Promotion.Prelude
 import Data.Time.Clock
 import Data.Typeable
 import MathObj.Matrix  (columns)
-import System.Directory
+import Options
 import System.FilePath ((</>))
 import System.IO
 import Text.Printf
@@ -51,30 +53,51 @@ import Crypto.Lol.Applications.Examples.HomomPRFParams
 
 type Z = Int64
 
-protoDir :: MonadIO m => Int -> String -> m String
-protoDir p d = liftIO $ do
-  base <- getAppUserDataDirectory "Lol"
-  return $ base </> printf "p%d-%s" p d
-
-lfuncPath, thintPath, rhintPath, tskPath, rskPath :: MonadIO m => Int -> m String
-thintPath p = protoDir p "tunnel.hint"
-rhintPath p = protoDir p "round.hint"
-lfuncPath p = protoDir p "tunnelfuncs.lfuns"
+lfuncPath, thintPath, rhintPath, tskPath, rskPath :: String -> Int -> String
+thintPath root p = root </> "p" ++ show p ++ "-tunnel.hint"
+rhintPath root p = root </> "p" ++ show p ++ "-round.hint"
+lfuncPath root p = root </> "p" ++ show p ++ "-unnelfuncs.lfuns"
 -- | The key used as the input to tunneling; also used for encryption
-tskPath   p = protoDir p "encKey.secret"
+tskPath   root p = root </> "p" ++ show p ++ "-encKey.secret"
 -- | The output key of tunneling, used for rounding; also for decryption
-rskPath   p = protoDir p "decKey.secret"
+rskPath   root p = root </> "p" ++ show p ++ "-decKey.secret"
 
+data MainOpts =
+  MainOpts
+  { optDataDir :: FilePath -- ^ location of precomputed data
+  }
+
+instance Options MainOpts where
+  defineOptions = MainOpts <$>
+    defineOption optionType_string (\o ->
+      o {optionLongFlags = ["path"],
+         optionShortFlags = ['p'],
+         optionDefault = ".",
+         optionDescription = "Path to precomputed data. If no data is found, \
+           \it will be generated and saved to this location."})
+
+-- | Driver for the homomorphic PRF evaluation.
+--
 -- R' - ... - S'
+--
 -- |  -  |  - |
+--
 -- R  - ... - S
+--
 -- PRF evaluation usually goes from R' to R. Homomorphic evaluation
 -- goes from R' to S, via S'. To test, we run the computation in the clear
 -- from R' to R, then tunnel in the clear to S.
+--
+-- The executable takes a path (specified with --path or -p, default "."), from
+-- which it tries to read preomputed data. If the data is not found, it generates
+-- the data and saves it to the path.
 homomPRFMain :: forall t . (_) => Proxy t -> IO ()
-homomPRFMain pt = do
+homomPRFMain = runCommand . homomPRFMain'
+
+homomPRFMain' :: forall t . (_) => Proxy t -> MainOpts -> [String] -> IO ()
+homomPRFMain' pt MainOpts{..} _ = do
   putStrLn $ "Starting homomorphic PRF evaluation with tensor " ++ show (typeRep pt)
-  hints' <- runExceptT readHints
+  hints' <- runExceptT $ readHints optDataDir
   (lfuns, hints :: EvalHints t RngList Z ZP ZQ ZQSeq KSGad, encKey, decKey) <- case hints' of
     (Right a) -> do
       putStrLn "Using precomputed hints."
@@ -90,7 +113,7 @@ homomPRFMain pt = do
         rHints <- roundHints decKey
         let hints = Hints tHints rHints
         return (lfuns, hints, encKey, decKey)
-      writeHints lfuns hints encKey decKey
+      writeHints optDataDir lfuns hints encKey decKey
       return (lfuns, hints, encKey, decKey)
   gen :: CryptoRand HashDRBG <- liftIO newGenIO -- uses system entropy
   (family, s, ct) <- time "Generating random inputs..." $ flip evalRand gen $ do
@@ -116,34 +139,18 @@ readHints :: forall mon t rngs z e zp zq zqs gad r' s' .
    ProtoReadable (RoundHints t (Fst (Last rngs)) (Snd (Last rngs)) z e zp (ZqDown zq zqs) zqs gad),
    ProtoReadable (SK Double (Cyc t r' z)), ProtoReadable (SK Double (Cyc t s' z)),
    ToInteger (ModRep zp))
-  => mon (TunnelFuncs t (PTRings rngs) (TwoOf zp),
+  => String -> mon (TunnelFuncs t (PTRings rngs) (TwoOf zp),
           EvalHints t rngs z zp zq zqs gad,
           SK Double (Cyc t r' z), SK Double (Cyc t s' z))
-readHints = do
+readHints root = do
   let p = fromIntegral $ proxy modulus (Proxy::Proxy zp)
-  lfuns  <- parseProtoFile =<< lfuncPath p
-  tHints <- parseProtoFile =<< thintPath p
-  rHints <- parseProtoFile =<< rhintPath p
-  tsk    <- parseProtoFile =<< tskPath p
-  rsk    <- parseProtoFile =<< rskPath p
+  lfuns  <- parseProtoFile $ lfuncPath root p
+  tHints <- parseProtoFile $ thintPath root p
+  rHints <- parseProtoFile $ rhintPath root p
+  tsk    <- parseProtoFile $ tskPath   root p
+  rsk    <- parseProtoFile $ rskPath   root p
   return (lfuns, Hints tHints rHints, tsk, rsk)
-{-
-readOrGenHints :: (MonadIO mon, MonadRandom mon, Head RngList ~ '(r,r'), Last RngList ~ '(s,s'))
-  => mon (EvalHints T RngList Z ZP ZQ ZQSeq KSGad, SK (Cyc T r' Z), SK (Cyc T s' Z))
-readOrGenHints = do
-  res <- runExceptT readHints
-  case res of
-    (Left st) -> do
-      liftIO $ putStrLn $ "Could not read precomputed data. Error was: " ++ st
-      (hints, sk, skout) <- do
 
-      liftIO $ putStrLn "Writing hints to disk..."
-      writeHints hints sk skout
-      return (hints, sk, skout)
-    (Right a) -> do
-      liftIO $ putStrLn "Precomputed hints found."
-      return a
--}
 writeHints :: forall mon t rngs z e zp zq zqs gad r' s' .
   (MonadIO mon, Mod zp, UnPP (CharOf zp) ~ '(Prime2, e),
    ProtoReadable (TunnelFuncs t (PTRings rngs) (TwoOf zp)),
@@ -151,18 +158,19 @@ writeHints :: forall mon t rngs z e zp zq zqs gad r' s' .
    ProtoReadable (RoundHints t (Fst (Last rngs)) (Snd (Last rngs)) z e zp (ZqDown zq zqs) zqs gad),
    ProtoReadable (SK Double (Cyc t r' z)), ProtoReadable (SK Double (Cyc t s' z)),
    ToInteger (ModRep zp))
-  => TunnelFuncs t (PTRings rngs) (TwoOf zp)
+  => String
+  -> TunnelFuncs t (PTRings rngs) (TwoOf zp)
   -> EvalHints t rngs z zp zq zqs gad
   -> SK Double (Cyc t r' z)
   -> SK Double (Cyc t s' z)
   -> mon ()
-writeHints lfuns (Hints tHints rHints) encKey decKey = do
+writeHints root lfuns (Hints tHints rHints) encKey decKey = do
   let p = fromIntegral $ proxy modulus (Proxy::Proxy zp)
-  flip writeProtoFile lfuns  =<< lfuncPath p
-  flip writeProtoFile tHints =<< thintPath p
-  flip writeProtoFile rHints =<< rhintPath p
-  flip writeProtoFile encKey =<< tskPath p
-  flip writeProtoFile decKey =<< rskPath p
+  writeProtoFile (lfuncPath root p) lfuns
+  writeProtoFile (thintPath root p) tHints
+  writeProtoFile (rhintPath root p) rHints
+  writeProtoFile (tskPath   root p) encKey
+  writeProtoFile (rskPath   root p) decKey
 
 -- timing functionality
 time :: (NFData a) => String -> a -> IO a
