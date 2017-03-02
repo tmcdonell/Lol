@@ -3,7 +3,7 @@ Module      : Crypto.Lol.Applications.Examples.KHPRF
 Description : Example using KeyHomomorphicPRF.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
-License     : GPL-2
+License     : GPL-3
 Maintainer  : ecrockett0@email.com
 Stability   : experimental
 Portability : POSIX
@@ -39,7 +39,7 @@ type Cyclo t m q = Cyc t m (Zq q)
 type Gad = BaseBGad 2
 type M = F128
 
--- | Tensor-polymorphic driver for a key-homomorphic PRF over rings.
+-- | Driver for a key-homomorphic PRF over rings.
 khprfRingMain :: forall t . (_) => Proxy t -> IO ()
 khprfRingMain _ = do
   family :: PRFFamily Gad (Cyclo t M 257) (Cyclo t M 32) <- randomFamily 10 -- works on 10-bit input

@@ -3,7 +3,7 @@ Module      : Crypto.Lol.Applications.Tests.SHETests
 Description : Tests for SymmSHE.
 Copyright   : (c) Eric Crockett, 2011-2017
                   Chris Peikert, 2011-2017
-License     : GPL-2
+License     : GPL-3
 Maintainer  : ecrockett0@email.com
 Stability   : experimental
 Portability : POSIX
@@ -31,7 +31,6 @@ import Control.Monad.Random
 import Crypto.Lol
 import Crypto.Lol.Applications.SymmSHE
 import Crypto.Lol.Tests
-import Crypto.Lol.Utils.ShowType
 
 import qualified Test.Framework as TF
 
