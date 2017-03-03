@@ -79,6 +79,11 @@ defaultAppsTests pt pgad  =
     ksTests (Proxy::Proxy '(F4, F12, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601))) pgad,
     ksTests (Proxy::Proxy '(F8, F64, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601))) pgad,
     ksTests (Proxy::Proxy '(F3, F27, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601))) pgad,
+    -- EAC: these used to go from three moduli to one modulus, but that
+    -- resulted in needing to lift a pair to an Integer on the GPU. Since that's
+    -- not possible with AT, I just modified the test parameters. As long as we
+    -- use the optimized rescaleCyc instance, we should be okay. This means
+    -- we can only drop the left-most modulus in a product.
     ksTests (Proxy::Proxy '(F2, F4,  Zq 8, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
     ksTests (Proxy::Proxy '(F4, F12, Zq 2, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
     ksTests (Proxy::Proxy '(F8, F64, Zq 2, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
