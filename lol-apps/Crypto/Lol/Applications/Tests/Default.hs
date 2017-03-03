@@ -79,10 +79,10 @@ defaultAppsTests pt pgad  =
     ksTests (Proxy::Proxy '(F4, F12, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601))) pgad,
     ksTests (Proxy::Proxy '(F8, F64, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601))) pgad,
     ksTests (Proxy::Proxy '(F3, F27, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601))) pgad,
-    ksTests (Proxy::Proxy '(F2, F4,  Zq 8, Zq 2148854401, Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
-    ksTests (Proxy::Proxy '(F4, F12, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
-    ksTests (Proxy::Proxy '(F8, F64, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
-    ksTests (Proxy::Proxy '(F3, F27, Zq 2, Zq 2148854401, Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
+    ksTests (Proxy::Proxy '(F2, F4,  Zq 8, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
+    ksTests (Proxy::Proxy '(F4, F12, Zq 2, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
+    ksTests (Proxy::Proxy '(F8, F64, Zq 2, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
+    ksTests (Proxy::Proxy '(F3, F27, Zq 2, Zq (2148249601 ** 2150668801), Zq (2148854401 ** 2148249601 ** 2150668801))) pgad,
 
     twemTests (Proxy::Proxy '(F1, F7, F3, F21, Zq 2, Zq 18869761)),
 
